@@ -154,7 +154,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                   </Label>
                   <Input
                     id="name"
-                    name="user_name"
+                    name="name"
                     value={formState.name}
                     onChange={handleChange}
                     className={`border-gray-300 focus:border-[#0077be] focus:ring-[#0077be] ${errors.name ? "border-red-500" : ""}`}
@@ -171,7 +171,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                   </Label>
                   <Input
                     id="email"
-                    name="user_email"
+                    name="email"
                     type="email"
                     value={formState.email}
                     onChange={handleChange}
@@ -190,7 +190,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                 </Label>
                 <Input
                   id="phone"
-                  name="user_phone"
+                  name="phone"
                   type="tel"
                   value={formState.phone}
                   onChange={handleChange}
