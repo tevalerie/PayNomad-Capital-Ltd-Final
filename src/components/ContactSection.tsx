@@ -7,10 +7,8 @@ import { Card } from "./ui/card";
 import { Send, CheckCircle } from "lucide-react";
 import emailjs from "@emailjs/browser";
 
-// Initialize EmailJS with public key (if available in environment)
-if (import.meta.env.VITE_EMAILJS_PUBLIC_KEY) {
-  emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
-}
+// Initialize EmailJS with public key
+emailjs.init("0Smk56TSivW-wtEJp");
 
 interface ContactSectionProps {
   title?: string;
@@ -86,10 +84,10 @@ const ContactSection: React.FC<ContactSectionProps> = ({
       // EmailJS configuration
       emailjs
         .sendForm(
-          import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_id", // Uses environment variable if available
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_id", // Uses environment variable if available
+          "service_tpp26lo", // Service ID
+          "template_jxqzh6n", // Template ID
           formRef.current as HTMLFormElement,
-          import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "public_key", // Uses environment variable if available
+          "0Smk56TSivW-wtEJp", // Public key
         )
         .then((result) => {
           console.log("Email sent successfully:", result.text);
