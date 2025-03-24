@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="6" fill="#0077BE"/>
-  <path d="M10 8H18C20.2091 8 22 9.79086 22 12V14C22 16.2091 20.2091 18 18 18H10V8Z" fill="white"/>
-  <rect x="10" y="18" width="2" height="8" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- Background square with rounded corners -->
+  <rect width="48" height="48" rx="8" fill="#0077BE"/>
+  
+  <!-- White border around the icon -->
+  <rect x="4" y="4" width="40" height="40" rx="6" fill="none" stroke="white" stroke-width="2"/>
+  
+  <!-- The P shape -->
+  <path d="M15 12H27C30.3137 12 33 14.6863 33 18V21C33 24.3137 30.3137 27 27 27H15V12Z" fill="white"/>
+  <rect x="15" y="27" width="3" height="12" fill="white"/>
 </svg>
