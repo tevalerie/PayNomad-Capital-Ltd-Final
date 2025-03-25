@@ -11,6 +11,9 @@
   <!-- Then draw the inner P shape in the blue color -->
   <path d="M16 13H27C29.7614 13 32 15.2386 32 18V21C32 23.7614 29.7614 26 27 26H16V13Z" fill="#0077BE"/>
   
+  <!-- Adding white contrast in the middle of the P -->
+  <path d="M22 16H27C28.1046 16 29 16.8954 29 18V21C29 22.1046 28.1046 23 27 23H22V16Z" fill="white"/>
+  
   <!-- The stem of the P with stronger definition -->
   <rect x="14" y="27" width="5" height="12" fill="white"/>
   <rect x="16" y="27" width="2" height="12" fill="#0077BE"/>
