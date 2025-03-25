@@ -5,7 +5,8 @@
   <!-- White border around the icon -->
   <rect x="4" y="4" width="40" height="40" rx="6" fill="none" stroke="white" stroke-width="2"/>
   
-  <!-- The P shape -->
+  <!-- The P shape with border -->
+  <path d="M15 12H27C30.3137 12 33 14.6863 33 18V21C33 24.3137 30.3137 27 27 27H15V12Z" fill="#0077BE" stroke="white" stroke-width="1.5"/>
   <path d="M15 12H27C30.3137 12 33 14.6863 33 18V21C33 24.3137 30.3137 27 27 27H15V12Z" fill="white"/>
-  <rect x="15" y="27" width="3" height="12" fill="white"/>
+  <rect x="15" y="27" width="3" height="12" fill="white" stroke="white" stroke-width="0.5"/>
 </svg>
