@@ -1,3 +1,11 @@
+# Force HTTPS for www.paynomadcapital.com
+http://www.paynomadcapital.com/* https://www.paynomadcapital.com/:splat 301!
+# Force HTTPS for non-www version
+http://paynomadcapital.com/* https://www.paynomadcapital.com/:splat 301!
+# Redirect non-www to www with HTTPS
+https://paynomadcapital.com/* https://www.paynomadcapital.com/:splat 301!
+
+# Other domain redirects
 https://paynomad.co/* https://www.paynomadcapital.com/:splat 301!
 https://www.paynomad.co/* https://www.paynomadcapital.com/:splat 301!
 https://paynomadcapital.ca/* https://www.paynomadcapital.com/:splat 301!
