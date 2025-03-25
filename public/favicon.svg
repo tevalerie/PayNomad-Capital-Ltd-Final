@@ -12,7 +12,7 @@
   <path d="M16 13H27C29.7614 13 32 15.2386 32 18V21C32 23.7614 29.7614 26 27 26H16V13Z" fill="#0077BE"/>
   
   <!-- Adding white contrast in the middle of the P -->
-  <path d="M21 15.5H27C28.3807 15.5 29.5 16.6193 29.5 18V21C29.5 22.3807 28.3807 23.5 27 23.5H21V15.5Z" fill="white"/>
+  <path d="M22.5 16.5H27C27.8284 16.5 28.5 17.1716 28.5 18V21C28.5 21.8284 27.8284 22.5 27 22.5H22.5V16.5Z" fill="white"/>
   
   <!-- The stem of the P with stronger definition -->
   <rect x="14" y="27" width="5" height="12" fill="white"/>
