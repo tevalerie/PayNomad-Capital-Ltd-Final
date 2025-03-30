@@ -1,20 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
-  <!-- Background square with rounded corners -->
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="48" height="48" rx="8" fill="#0077BE"/>
-  
-  <!-- White border around the icon -->
-  <rect x="4" y="4" width="40" height="40" rx="6" fill="none" stroke="white" stroke-width="2"/>
-  
-  <!-- The P shape with stronger definition -->
-  <!-- First draw a slightly larger P shape in white as the border -->
-  <path d="M14 11H27C30.866 11 34 14.134 34 18V21C34 24.866 30.866 28 27 28H14V11Z" fill="white"/>
-  <!-- Then draw the inner P shape in the blue color -->
-  <path d="M16 13H27C29.7614 13 32 15.2386 32 18V21C32 23.7614 29.7614 26 27 26H16V13Z" fill="#0077BE"/>
-  
-  <!-- Adding a smaller white area in the middle of the P -->
+  <path d="M15 15H27C30.3137 15 33 17.6863 33 21V21C33 24.3137 30.3137 27 27 27H15V15Z" fill="#2C3E50"/>
   <path d="M24 16.5H27C27.8284 16.5 28.5 17.1716 28.5 18V21C28.5 21.8284 27.8284 22.5 27 22.5H24V16.5Z" fill="white"/>
-  
-  <!-- The stem of the P with stronger definition -->
-  <rect x="14" y="27" width="5" height="12" fill="white"/>
-  <rect x="16" y="27" width="2" height="12" fill="#0077BE"/>
+  <path d="M15 27H21V33H15V27Z" fill="#2C3E50"/>
 </svg>
