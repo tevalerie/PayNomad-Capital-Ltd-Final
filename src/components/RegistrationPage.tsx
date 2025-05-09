@@ -83,12 +83,12 @@ const RegistrationPage: React.FC = () => {
 
       console.log("Template params:", templateParams);
 
-      // Try both sendForm and send methods to ensure delivery
-      const emailResult = await emailjs.sendForm(
-        "service_x5m3npv", // Service ID
-        "template_idsnrqj", // Template ID
-        formRef.current,
-        "0Smk56TSivW-wtEJp", // Public key
+      // Use only one email sending method - the explicit parameters approach is more reliable
+      const emailResult = await emailjs.send(
+        "service_x5m3npv",
+        "template_idsnrqj",
+        templateParams,
+        "0Smk56TSivW-wtEJp",
       );
 
       console.log("EmailJS result:", emailResult);
@@ -97,20 +97,6 @@ const RegistrationPage: React.FC = () => {
         throw new Error(
           `EmailJS returned status ${emailResult.status}: ${emailResult.text}`,
         );
-      }
-
-      // As a backup, also try the send method with explicit parameters
-      try {
-        await emailjs.send(
-          "service_x5m3npv",
-          "template_idsnrqj",
-          templateParams,
-          "0Smk56TSivW-wtEJp",
-        );
-        console.log("Backup email sent successfully");
-      } catch (backupError) {
-        console.warn("Backup email sending failed:", backupError);
-        // Don't throw error here, we'll continue if the primary method worked
       }
 
       // Redirect to signin with message
@@ -179,7 +165,6 @@ const RegistrationPage: React.FC = () => {
                 type="text"
                 placeholder="Enter your first name"
                 className={`w-full h-12 px-4 rounded-md border ${errors.firstName ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
-                name="f_name"
                 {...register("firstName")}
                 aria-invalid={errors.firstName ? "true" : "false"}
               />
@@ -203,7 +188,6 @@ const RegistrationPage: React.FC = () => {
                 type="text"
                 placeholder="Enter your last name"
                 className={`w-full h-12 px-4 rounded-md border ${errors.lastName ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
-                name="l_name"
                 {...register("lastName")}
                 aria-invalid={errors.lastName ? "true" : "false"}
               />
@@ -227,7 +211,6 @@ const RegistrationPage: React.FC = () => {
                 type="email"
                 placeholder="name@company.com"
                 className={`w-full h-12 px-4 rounded-md border ${errors.email ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
-                name="email"
                 {...register("email")}
                 aria-invalid={errors.email ? "true" : "false"}
               />
@@ -250,7 +233,6 @@ const RegistrationPage: React.FC = () => {
                 type="text"
                 placeholder="Kindly provide your reference code (optional)"
                 className="w-full h-12 px-4 rounded-md border border-[#EFF2F6] focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]"
-                name="referral_code"
                 {...register("referralCode")}
               />
             </div>
