@@ -12,10 +12,10 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: "About Us", id: "about" },
-    { label: "Services", id: "services" },
-    { label: "Insights", id: "insights" },
-    { label: "Contact", id: "contact" },
+    { label: "About", id: "about" },
+    { label: "Our Services", id: "services" },
+    { label: "Financial Insights", id: "insights" },
+    { label: "Get in Touch", id: "contact" },
   ];
 
   useEffect(() => {
@@ -28,7 +28,19 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
   }, []);
 
   const handleNavigation = (sectionId: string) => {
-    onNavigate(sectionId);
+    // Check if we're on the homepage or another page
+    const isHomePage =
+      window.location.pathname === "/" || window.location.pathname === "";
+
+    if (isHomePage) {
+      // If on homepage, use the onNavigate prop for smooth scrolling
+      onNavigate(sectionId);
+    } else {
+      // If on another page (like registration), navigate to homepage with section hash
+      // Force a full page reload to ensure the hash is processed correctly
+      window.location.href = `/#${sectionId}`;
+    }
+
     setIsMobileMenuOpen(false);
   };
 
@@ -48,7 +60,7 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
         </a>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex space-x-8 items-center">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -58,6 +70,18 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               {item.label}
             </button>
           ))}
+          <a
+            href="/register"
+            className="text-[#6B96C3] border border-[#6B96C3] hover:bg-[#6B96C3] hover:text-white transition-colors duration-200 rounded-md px-6 py-2 font-medium mr-2"
+          >
+            REGISTER
+          </a>
+          <a
+            href="https://ebank.paynomadcapital.com/signin"
+            className="text-white border border-[#0077be] bg-[#0077be] hover:bg-[#6B96C3] hover:border-[#6B96C3] transition-colors duration-200 rounded-md px-6 py-2 font-medium"
+          >
+            SIGN IN
+          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -79,11 +103,23 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               <button
                 key={item.id}
                 onClick={() => handleNavigation(item.id)}
-                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b]"
               >
                 {item.label}
               </button>
             ))}
+            <a
+              href="/register"
+              className="text-[#6B96C3] hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b]"
+            >
+              REGISTER
+            </a>
+            <a
+              href="https://ebank.paynomadcapital.com/signin"
+              className="text-[#0077be] hover:text-[#6B96C3] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+            >
+              SIGN IN
+            </a>
           </div>
         </div>
       )}
