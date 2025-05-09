@@ -13,24 +13,6 @@ try {
 
   // Add debug info
   console.log("EmailJS version:", emailjs.version);
-
-  // Test EmailJS connection
-  emailjs
-    .send(
-      "service_x5m3npv",
-      "template_idsnrqj",
-      {
-        from_name: "System Test",
-        to_name: "PayNomad Support",
-        reply_to: "system@test.com",
-        message: "This is a system test to verify EmailJS configuration",
-      },
-      "0Smk56TSivW-wtEJp",
-    )
-    .then(
-      (response) => console.log("Test email sent successfully:", response),
-      (error) => console.error("Test email failed:", error),
-    );
 } catch (error) {
   console.error("Failed to initialize EmailJS:", error);
 }
@@ -163,7 +145,11 @@ const RegistrationPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Navbar />
+      <Navbar
+        onNavigate={(sectionId) => {
+          window.location.href = `/#${sectionId}`;
+        }}
+      />
 
       {/* Mini Hero Section */}
       <div className="bg-[#2C3E50] h-[240px] flex items-center justify-center">
@@ -322,15 +308,43 @@ const RegistrationPage: React.FC = () => {
               )}
             </button>
 
-            {/* Sign In Link */}
-            <div className="text-center text-sm">
-              <span className="text-gray-600">Already have an account? </span>
-              <a
-                href="https://ebank.paynomadcapital.com/signin"
-                className="text-[#0077BE] underline hover:text-[#6B96C3]"
-              >
-                Sign In
-              </a>
+            {/* Quick Links */}
+            <div className="text-center text-sm space-y-2">
+              <div>
+                <span className="text-gray-600">Already have an account? </span>
+                <a
+                  href="https://ebank.paynomadcapital.com/signin"
+                  className="text-[#0077BE] underline hover:text-[#6B96C3]"
+                >
+                  Sign In
+                </a>
+              </div>
+              <div className="flex justify-center flex-wrap gap-4 pt-2">
+                <a
+                  href="/#about"
+                  className="text-[#0077BE] hover:text-[#6B96C3]"
+                >
+                  About Us
+                </a>
+                <a
+                  href="/#services"
+                  className="text-[#0077BE] hover:text-[#6B96C3]"
+                >
+                  Services
+                </a>
+                <a
+                  href="/#insights"
+                  className="text-[#0077BE] hover:text-[#6B96C3]"
+                >
+                  Insights
+                </a>
+                <a
+                  href="/#contact"
+                  className="text-[#0077BE] hover:text-[#6B96C3]"
+                >
+                  Contact
+                </a>
+              </div>
             </div>
           </form>
         </div>
