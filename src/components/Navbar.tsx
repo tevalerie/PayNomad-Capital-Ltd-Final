@@ -48,7 +48,7 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
         </a>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex space-x-8 items-center">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -58,6 +58,12 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               {item.label}
             </button>
           ))}
+          <a
+            href="/register"
+            className="text-[#6B96C3] border border-[#6B96C3] hover:bg-[#6B96C3] hover:text-white transition-colors duration-200 rounded-md px-6 py-2 font-medium"
+          >
+            REGISTER
+          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -79,11 +85,17 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               <button
                 key={item.id}
                 onClick={() => handleNavigation(item.id)}
-                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b]"
               >
                 {item.label}
               </button>
             ))}
+            <a
+              href="/register"
+              className="text-[#6B96C3] hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+            >
+              REGISTER
+            </a>
           </div>
         </div>
       )}
