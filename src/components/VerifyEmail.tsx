@@ -48,7 +48,7 @@ const VerifyEmail: React.FC = () => {
       });
 
       setTimeout(() => {
-        window.location.href = "https://ebank.paynomadcapital.com/signin";
+        window.location.href = "https://ebank.paynomadcapital.com/login";
       }, 1500); // Short delay to show success message
     } catch (error: any) {
       console.error("Error verifying email:", error);
@@ -185,7 +185,7 @@ const VerifyEmail: React.FC = () => {
               <div>
                 <span className="text-gray-600">Already verified? </span>
                 <a
-                  href="https://ebank.paynomadcapital.com/signin"
+                  href="https://ebank.paynomadcapital.com/login"
                   className="text-[#0077BE] underline hover:text-[#6B96C3]"
                 >
                   Sign In

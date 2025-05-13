@@ -46,7 +46,7 @@ const RegistrationPage: React.FC = () => {
       });
 
       setTimeout(() => {
-        window.location.href = "https://ebank.paynomadcapital.com/signin";
+        window.location.href = "https://ebank.paynomadcapital.com/login";
       }, 1500); // Short delay to show success message
     } catch (error: any) {
       console.error("Error submitting form:", error);
@@ -224,7 +224,7 @@ const RegistrationPage: React.FC = () => {
               <div>
                 <span className="text-gray-600">Already have an account? </span>
                 <a
-                  href="https://ebank.paynomadcapital.com/signin"
+                  href="https://ebank.paynomadcapital.com/login"
                   className="text-[#0077BE] underline hover:text-[#6B96C3]"
                 >
                   Sign In

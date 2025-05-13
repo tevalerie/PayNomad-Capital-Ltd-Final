@@ -3,6 +3,7 @@ import { useRoutes } from "react-router-dom";
 import routes from "tempo-routes";
 import Home from "./components/home";
 import RegistrationPage from "./components/RegistrationPage";
+import VerifyEmail from "./components/VerifyEmail";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<RegistrationPage />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         {/* Add more routes as needed */}
 
         {/* Add this before the catchall route */}
