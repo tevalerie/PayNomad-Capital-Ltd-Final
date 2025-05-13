@@ -65,57 +65,75 @@ const RegistrationPage = () => {
 
     setIsLoading(true);
 
-    try {
-      // Call the signup-send-magic-link Edge Function
-      const { data, error } = await supabase.functions.invoke(
-        "supabase-functions-signup-send-magic-link",
-        {
-          body: {
-            first_name: firstName,
-            last_name: lastName,
-            email,
-            referral_code: referralCode,
+    // Retry mechanism for edge function calls
+    const maxRetries = 3;
+    let retryCount = 0;
+
+    const invokeEdgeFunctionWithRetry = async () => {
+      try {
+        // Call the signup-send-magic-link Edge Function
+        const { data, error } = await supabase.functions.invoke(
+          "supabase-functions-signup-send-magic-link",
+          {
+            body: {
+              first_name: firstName,
+              last_name: lastName,
+              email,
+              referral_code: referralCode,
+            },
           },
-        },
-      );
-
-      if (error) {
-        setError(
-          error.message ||
-            "An error occurred during registration. Please try again.",
         );
-        console.error("Registration error:", error);
-        return;
+
+        if (error) {
+          throw new Error(
+            error.message || "An error occurred during registration",
+          );
+        }
+
+        // If there's an error message in the response data
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+
+        setMessage("Verification email sent. Please check your inbox.");
+
+        // Store email in sessionStorage for verification page
+        sessionStorage.setItem("registrationEmail", email);
+
+        // Clear form
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setReferralCode("");
+
+        // Redirect to home page after a short delay
+        setTimeout(() => {
+          navigate("/");
+        }, 3000);
+      } catch (err) {
+        console.error(`Registration attempt ${retryCount + 1} failed:`, err);
+
+        if (retryCount < maxRetries) {
+          retryCount++;
+          const delay = 1000 * retryCount; // Exponential backoff
+          console.log(`Retrying registration in ${delay}ms...`);
+          setTimeout(invokeEdgeFunctionWithRetry, delay);
+        } else {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "An unexpected error occurred. Please try again later.",
+          );
+        }
+      } finally {
+        if (retryCount >= maxRetries || retryCount === 0) {
+          setIsLoading(false);
+        }
       }
+    };
 
-      // If there's an error message in the response data
-      if (data?.error) {
-        setError(data.error);
-        console.error("API error:", data.error);
-        return;
-      }
-
-      setMessage("Verification email sent. Please check your inbox.");
-
-      // Store email in sessionStorage for verification page
-      sessionStorage.setItem("registrationEmail", email);
-
-      // Clear form
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setReferralCode("");
-
-      // Redirect to home page after a short delay
-      setTimeout(() => {
-        navigate("/");
-      }, 3000);
-    } catch (err) {
-      setError("An unexpected error occurred. Please try again later.");
-      console.error("Unexpected error:", err);
-    } finally {
-      setIsLoading(false);
-    }
+    // Start the registration process with retry mechanism
+    invokeEdgeFunctionWithRetry();
   };
 
   return (

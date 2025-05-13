@@ -83,33 +83,57 @@ const ContactSection: React.FC<ContactSectionProps> = ({
       setIsLoading(true);
       setEmailError("");
 
-      // EmailJS configuration
-      emailjs
-        .sendForm(
-          import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_id", // Uses environment variable if available
-          import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_id", // Uses environment variable if available
-          formRef.current as HTMLFormElement,
-          import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "public_key", // Uses environment variable if available
-        )
-        .then((result) => {
-          console.log("Email sent successfully:", result.text);
-          setIsSubmitted(true);
+      // Retry mechanism for email sending
+      const maxRetries = 3;
+      let retryCount = 0;
 
-          // Reset form after submission
-          setFormState({
-            name: "",
-            email: "",
-            phone: "",
-            message: "",
+      const sendEmailWithRetry = () => {
+        // EmailJS configuration
+        emailjs
+          .sendForm(
+            import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_id", // Uses environment variable if available
+            import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_id", // Uses environment variable if available
+            formRef.current as HTMLFormElement,
+            import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "public_key", // Uses environment variable if available
+          )
+          .then((result) => {
+            console.log("Email sent successfully:", result.text);
+            setIsSubmitted(true);
+
+            // Reset form after submission
+            setFormState({
+              name: "",
+              email: "",
+              phone: "",
+              message: "",
+            });
+          })
+          .catch((error) => {
+            console.error(
+              `Failed to send email (attempt ${retryCount + 1}):`,
+              error.text,
+            );
+
+            if (retryCount < maxRetries) {
+              retryCount++;
+              const delay = 1000 * retryCount; // Exponential backoff
+              console.log(`Retrying in ${delay}ms...`);
+              setTimeout(sendEmailWithRetry, delay);
+            } else {
+              setEmailError(
+                "Failed to send your message after multiple attempts. Please try again later.",
+              );
+            }
+          })
+          .finally(() => {
+            if (retryCount >= maxRetries || retryCount === 0) {
+              setIsLoading(false);
+            }
           });
-        })
-        .catch((error) => {
-          console.error("Failed to send email:", error.text);
-          setEmailError("Failed to send your message. Please try again later.");
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+      };
+
+      // Start the email sending process with retry mechanism
+      sendEmailWithRetry();
     }
   };
 

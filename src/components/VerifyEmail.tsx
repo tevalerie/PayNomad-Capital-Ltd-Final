@@ -40,67 +40,89 @@ const VerifyEmail = () => {
         setEmail(storedEmail);
       }
 
-      try {
-        // Call the verify-magic-link Edge Function
-        const { data, error } = await supabase.functions.invoke(
-          "supabase-functions-verify-magic-link",
-          {
-            body: { token },
-          },
-        );
+      // Retry mechanism for edge function calls
+      const maxRetries = 3;
+      let retryCount = 0;
 
-        if (error) {
-          setStatus("error");
-          setMessage(
-            error.message ||
-              "An error occurred during verification. Please try again.",
+      const verifyWithRetry = async () => {
+        try {
+          // Call the verify-magic-link Edge Function
+          const { data, error } = await supabase.functions.invoke(
+            "supabase-functions-verify-magic-link",
+            {
+              body: { token },
+            },
           );
-          console.error("Verification error:", error);
-          return;
-        }
 
-        // If there's an error message in the response data
-        if (data?.error) {
-          setStatus("error");
-          setMessage(data.error);
-          console.error("API error:", data.error);
-          return;
-        }
-
-        setStatus("success");
-        setMessage("Your email has been successfully verified!");
-
-        // Set email from response if available, otherwise use stored email
-        if (data?.email) {
-          setEmail(data.email);
-        }
-
-        // Get the current session after verification
-        const { data: sessionData, error: sessionError } =
-          await supabase.auth.getSession();
-
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-        }
-
-        // Redirect to the signup page after a short delay
-        setTimeout(() => {
-          // If we have session data with access token, use it
-          if (sessionData?.session?.access_token) {
-            window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${sessionData.session.access_token}`;
-          } else if (data?.properties?.accessToken) {
-            // Otherwise try to use the token from the response
-            window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${data.properties.accessToken}`;
-          } else {
-            // Fallback to just redirecting without token
-            window.location.href = "https://ebank.paynomadcapital.com/signup";
+          if (error) {
+            throw new Error(
+              error.message ||
+                "An error occurred during verification. Please try again.",
+            );
           }
-        }, 2500);
-      } catch (err) {
-        setStatus("error");
-        setMessage("An unexpected error occurred. Please try again later.");
-        console.error("Unexpected error:", err);
-      }
+
+          // If there's an error message in the response data
+          if (data?.error) {
+            throw new Error(data.error);
+          }
+
+          setStatus("success");
+          setMessage("Your email has been successfully verified!");
+
+          // Set email from response if available, otherwise use stored email
+          if (data?.email) {
+            setEmail(data.email);
+          }
+
+          // Get the current session after verification
+          const { data: sessionData, error: sessionError } =
+            await supabase.auth.getSession();
+
+          if (sessionError) {
+            console.error("Session error:", sessionError);
+          }
+
+          // Redirect to the signup page after a short delay
+          setTimeout(() => {
+            try {
+              // If we have session data with access token, use it
+              if (sessionData?.session?.access_token) {
+                window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${sessionData.session.access_token}`;
+              } else if (data?.properties?.accessToken) {
+                // Otherwise try to use the token from the response
+                window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${data.properties.accessToken}`;
+              } else {
+                // Fallback to just redirecting without token
+                window.location.href =
+                  "https://ebank.paynomadcapital.com/signup";
+              }
+            } catch (redirectErr) {
+              console.error("Redirect error:", redirectErr);
+              // Fallback if redirect fails
+              window.location.href = "https://ebank.paynomadcapital.com/signup";
+            }
+          }, 2500);
+        } catch (err) {
+          console.error(`Verification attempt ${retryCount + 1} failed:`, err);
+
+          if (retryCount < maxRetries) {
+            retryCount++;
+            const delay = 1000 * retryCount; // Exponential backoff
+            console.log(`Retrying verification in ${delay}ms...`);
+            setTimeout(verifyWithRetry, delay);
+          } else {
+            setStatus("error");
+            setMessage(
+              err instanceof Error
+                ? err.message
+                : "An unexpected error occurred. Please try again later.",
+            );
+          }
+        }
+      };
+
+      // Start the verification process with retry mechanism
+      verifyWithRetry();
     };
 
     verifyEmail();
