@@ -58,14 +58,19 @@ const VerifyEmail = () => {
             }
 
             // Log verification success
-            await supabase.from("userData").insert({
-              email: storedEmail,
-              action: "email_verified",
-              action_details: {
-                verified_at: new Date().toISOString(),
-              },
-              created_at: new Date().toISOString(),
-            });
+            try {
+              await supabase.from("userData").insert({
+                email: storedEmail,
+                action: "email_verified",
+                action_details: {
+                  verified_at: new Date().toISOString(),
+                },
+                created_at: new Date().toISOString(),
+              });
+            } catch (logError) {
+              // Continue even if logging fails
+              console.error("Error logging email verification:", logError);
+            }
           }
 
           setStatus("success");
@@ -143,14 +148,19 @@ const VerifyEmail = () => {
               }
 
               // Log verification success
-              await supabase.from("userData").insert({
-                email: newSessionData.session.user.email,
-                action: "email_verified",
-                action_details: {
-                  verified_at: new Date().toISOString(),
-                },
-                created_at: new Date().toISOString(),
-              });
+              try {
+                await supabase.from("userData").insert({
+                  email: newSessionData.session.user.email,
+                  action: "email_verified",
+                  action_details: {
+                    verified_at: new Date().toISOString(),
+                  },
+                  created_at: new Date().toISOString(),
+                });
+              } catch (logError) {
+                // Continue even if logging fails
+                console.error("Error logging email verification:", logError);
+              }
             }
 
             // Redirect to the signup page after a short delay

@@ -28,7 +28,17 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
   }, []);
 
   const handleNavigation = (sectionId: string) => {
-    onNavigate(sectionId);
+    // Check if we're on the home page
+    const isHomePage = window.location.pathname === "/";
+
+    if (isHomePage) {
+      // If on home page, just navigate to the section
+      onNavigate(sectionId);
+    } else {
+      // If not on home page, navigate to home page with section hash
+      window.location.href = `/#${sectionId}`;
+    }
+
     setIsMobileMenuOpen(false);
   };
 
@@ -40,10 +50,7 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
       )}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <a
-          href="https://paynomadcapitalltd.com"
-          className="text-white font-bold text-xl md:text-2xl"
-        >
+        <a href="/" className="text-white font-bold text-xl md:text-2xl">
           PayNomad Capital
         </a>
 
@@ -65,7 +72,7 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
             REGISTER
           </a>
           <a
-            href="#"
+            href="https://ebank.paynomadcapital.com/login"
             className="text-[#0077be] border border-[#0077be] px-4 py-2 rounded transition-colors duration-200 font-medium hover:bg-[#0077be] hover:text-white"
           >
             SIGN IN
@@ -103,7 +110,7 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               REGISTER
             </a>
             <a
-              href="#"
+              href="https://ebank.paynomadcapital.com/login"
               className="text-[#0077be] border border-[#0077be] py-2 px-4 rounded text-center font-medium hover:bg-[#0077be] hover:text-white"
             >
               SIGN IN

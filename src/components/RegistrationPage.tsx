@@ -80,19 +80,22 @@ const RegistrationPage = () => {
       if (insertError) throw insertError;
 
       // Log signup attempt to userData table
-      const { error: logError } = await supabase.from("userData").insert({
-        email,
-        action: "signup_attempt",
-        action_details: {
-          first_name: firstName,
-          last_name: lastName,
-          referral_code: referralCode,
+      try {
+        await supabase.from("userData").insert({
+          email,
+          action: "signup_attempt",
+          action_details: {
+            first_name: firstName,
+            last_name: lastName,
+            referral_code: referralCode,
+            created_at: new Date().toISOString(),
+          },
           created_at: new Date().toISOString(),
-        },
-        created_at: new Date().toISOString(),
-      });
-
-      if (logError) throw logError;
+        });
+      } catch (logError) {
+        // Continue even if logging fails
+        console.error("Error logging signup attempt:", logError);
+      }
 
       // Send magic link using Supabase Auth
       const { error: authError } = await supabase.auth.signInWithOtp({
