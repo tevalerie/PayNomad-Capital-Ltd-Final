@@ -29,6 +29,8 @@ const RegistrationPage = () => {
   };
 
   const validateReferralCode = (code: string) => {
+    // Allow TEST123 for testing purposes, otherwise use the regex
+    if (code === "TEST123") return true;
     const re = /^(?=.*[A-Za-z])[A-Za-z0-9]{4,12}$/;
     return re.test(code);
   };
@@ -86,13 +88,28 @@ const RegistrationPage = () => {
         return;
       }
 
+      // If there's an error message in the response data
+      if (data?.error) {
+        setError(data.error);
+        console.error("API error:", data.error);
+        return;
+      }
+
       setMessage("Verification email sent. Please check your inbox.");
+
+      // Store email in sessionStorage for verification page
+      sessionStorage.setItem("registrationEmail", email);
 
       // Clear form
       setFirstName("");
       setLastName("");
       setEmail("");
       setReferralCode("");
+
+      // Redirect to home page after a short delay
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
     } catch (err) {
       setError("An unexpected error occurred. Please try again later.");
       console.error("Unexpected error:", err);
@@ -214,7 +231,7 @@ const RegistrationPage = () => {
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
                 <a
-                  href="#"
+                  href="https://ebank.paynomadcapital.com/login"
                   className="text-[#0077be] hover:underline font-medium"
                 >
                   Sign In

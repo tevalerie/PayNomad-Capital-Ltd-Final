@@ -34,6 +34,12 @@ const VerifyEmail = () => {
         return;
       }
 
+      // Try to get the email from sessionStorage (from registration page)
+      const storedEmail = sessionStorage.getItem("registrationEmail");
+      if (storedEmail) {
+        setEmail(storedEmail);
+      }
+
       try {
         // Call the verify-magic-link Edge Function
         const { data, error } = await supabase.functions.invoke(
@@ -53,22 +59,42 @@ const VerifyEmail = () => {
           return;
         }
 
+        // If there's an error message in the response data
+        if (data?.error) {
+          setStatus("error");
+          setMessage(data.error);
+          console.error("API error:", data.error);
+          return;
+        }
+
         setStatus("success");
         setMessage("Your email has been successfully verified!");
-        setEmail(data?.email || "");
+
+        // Set email from response if available, otherwise use stored email
+        if (data?.email) {
+          setEmail(data.email);
+        }
 
         // Get the current session after verification
         const { data: sessionData, error: sessionError } =
           await supabase.auth.getSession();
 
-        if (sessionError || !sessionData.session) {
+        if (sessionError) {
           console.error("Session error:", sessionError);
-          return;
         }
 
         // Redirect to the signup page after a short delay
         setTimeout(() => {
-          window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${sessionData.session.access_token}`;
+          // If we have session data with access token, use it
+          if (sessionData?.session?.access_token) {
+            window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${sessionData.session.access_token}`;
+          } else if (data?.properties?.accessToken) {
+            // Otherwise try to use the token from the response
+            window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${data.properties.accessToken}`;
+          } else {
+            // Fallback to just redirecting without token
+            window.location.href = "https://ebank.paynomadcapital.com/signup";
+          }
         }, 2500);
       } catch (err) {
         setStatus("error");
