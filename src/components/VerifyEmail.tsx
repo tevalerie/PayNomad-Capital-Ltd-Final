@@ -26,60 +26,54 @@ const VerifyEmail = () => {
 
   useEffect(() => {
     const verifyEmail = async () => {
-      const token = searchParams.get("token");
+      try {
+        // Try to get the email from sessionStorage (from registration page)
+        const storedEmail = sessionStorage.getItem("registrationEmail");
+        if (storedEmail) {
+          setEmail(storedEmail);
+        }
 
-      if (!token) {
-        setStatus("error");
-        setMessage("Invalid verification link. Please try again.");
-        return;
-      }
+        // Get the current session after verification
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
 
-      // Try to get the email from sessionStorage (from registration page)
-      const storedEmail = sessionStorage.getItem("registrationEmail");
-      if (storedEmail) {
-        setEmail(storedEmail);
-      }
+        if (sessionError) {
+          throw sessionError;
+        }
 
-      // Retry mechanism for edge function calls
-      const maxRetries = 3;
-      let retryCount = 0;
+        // If we have a session, the user has been verified
+        if (sessionData?.session) {
+          // Update the contacts table status to 'verified'
+          if (storedEmail) {
+            const { error: updateError } = await supabase
+              .from("contacts")
+              .update({
+                status: "verified",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("email", storedEmail);
 
-      const verifyWithRetry = async () => {
-        try {
-          // Call the verify-magic-link Edge Function
-          const { data, error } = await supabase.functions.invoke(
-            "supabase-functions-verify-magic-link",
-            {
-              body: { token },
-            },
-          );
+            if (updateError) {
+              console.error("Error updating contact status:", updateError);
+            }
 
-          if (error) {
-            throw new Error(
-              error.message ||
-                "An error occurred during verification. Please try again.",
-            );
-          }
-
-          // If there's an error message in the response data
-          if (data?.error) {
-            throw new Error(data.error);
+            // Log verification success
+            await supabase.from("userData").insert({
+              email: storedEmail,
+              action: "email_verified",
+              action_details: {
+                verified_at: new Date().toISOString(),
+              },
+              created_at: new Date().toISOString(),
+            });
           }
 
           setStatus("success");
           setMessage("Your email has been successfully verified!");
 
-          // Set email from response if available, otherwise use stored email
-          if (data?.email) {
-            setEmail(data.email);
-          }
-
-          // Get the current session after verification
-          const { data: sessionData, error: sessionError } =
-            await supabase.auth.getSession();
-
-          if (sessionError) {
-            console.error("Session error:", sessionError);
+          // Get user email from session if not already set
+          if (!email && sessionData.session.user?.email) {
+            setEmail(sessionData.session.user.email);
           }
 
           // Redirect to the signup page after a short delay
@@ -88,9 +82,6 @@ const VerifyEmail = () => {
               // If we have session data with access token, use it
               if (sessionData?.session?.access_token) {
                 window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${sessionData.session.access_token}`;
-              } else if (data?.properties?.accessToken) {
-                // Otherwise try to use the token from the response
-                window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${data.properties.accessToken}`;
               } else {
                 // Fallback to just redirecting without token
                 window.location.href =
@@ -102,27 +93,95 @@ const VerifyEmail = () => {
               window.location.href = "https://ebank.paynomadcapital.com/signup";
             }
           }, 2500);
-        } catch (err) {
-          console.error(`Verification attempt ${retryCount + 1} failed:`, err);
+        } else {
+          // No session found, check if we have a token in the URL
+          const token = searchParams.get("token");
 
-          if (retryCount < maxRetries) {
-            retryCount++;
-            const delay = 1000 * retryCount; // Exponential backoff
-            console.log(`Retrying verification in ${delay}ms...`);
-            setTimeout(verifyWithRetry, delay);
+          if (!token) {
+            setStatus("error");
+            setMessage("Invalid verification link. Please try again.");
+            return;
+          }
+
+          // Try to exchange the token for a session
+          const { error: exchangeError } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: "email",
+          });
+
+          if (exchangeError) {
+            throw exchangeError;
+          }
+
+          // Check again for a session after verification
+          const { data: newSessionData, error: newSessionError } =
+            await supabase.auth.getSession();
+
+          if (newSessionError) {
+            throw newSessionError;
+          }
+
+          if (newSessionData?.session) {
+            setStatus("success");
+            setMessage("Your email has been successfully verified!");
+
+            // Get user email from session
+            if (newSessionData.session.user?.email) {
+              setEmail(newSessionData.session.user.email);
+
+              // Update contacts table
+              const { error: updateError } = await supabase
+                .from("contacts")
+                .update({
+                  status: "verified",
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("email", newSessionData.session.user.email);
+
+              if (updateError) {
+                console.error("Error updating contact status:", updateError);
+              }
+
+              // Log verification success
+              await supabase.from("userData").insert({
+                email: newSessionData.session.user.email,
+                action: "email_verified",
+                action_details: {
+                  verified_at: new Date().toISOString(),
+                },
+                created_at: new Date().toISOString(),
+              });
+            }
+
+            // Redirect to the signup page after a short delay
+            setTimeout(() => {
+              try {
+                if (newSessionData?.session?.access_token) {
+                  window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${newSessionData.session.access_token}`;
+                } else {
+                  window.location.href =
+                    "https://ebank.paynomadcapital.com/signup";
+                }
+              } catch (redirectErr) {
+                console.error("Redirect error:", redirectErr);
+                window.location.href =
+                  "https://ebank.paynomadcapital.com/signup";
+              }
+            }, 2500);
           } else {
             setStatus("error");
-            setMessage(
-              err instanceof Error
-                ? err.message
-                : "An unexpected error occurred. Please try again later.",
-            );
+            setMessage("Unable to verify your email. Please try again.");
           }
         }
-      };
-
-      // Start the verification process with retry mechanism
-      verifyWithRetry();
+      } catch (err) {
+        console.error("Verification error:", err);
+        setStatus("error");
+        setMessage(
+          err instanceof Error
+            ? err.message
+            : "An unexpected error occurred. Please try again later.",
+        );
+      }
     };
 
     verifyEmail();

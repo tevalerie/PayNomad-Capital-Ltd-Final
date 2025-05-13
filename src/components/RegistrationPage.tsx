@@ -65,75 +65,70 @@ const RegistrationPage = () => {
 
     setIsLoading(true);
 
-    // Retry mechanism for edge function calls
-    const maxRetries = 3;
-    let retryCount = 0;
+    try {
+      // Store user data in contacts table
+      const { error: insertError } = await supabase.from("contacts").insert({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        referral_code: referralCode,
+        status: "pending",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
-    const invokeEdgeFunctionWithRetry = async () => {
-      try {
-        // Call the signup-send-magic-link Edge Function
-        const { data, error } = await supabase.functions.invoke(
-          "supabase-functions-signup-send-magic-link",
-          {
-            body: {
-              first_name: firstName,
-              last_name: lastName,
-              email,
-              referral_code: referralCode,
-            },
-          },
-        );
+      if (insertError) throw insertError;
 
-        if (error) {
-          throw new Error(
-            error.message || "An error occurred during registration",
-          );
-        }
+      // Log signup attempt to userData table
+      const { error: logError } = await supabase.from("userData").insert({
+        email,
+        action: "signup_attempt",
+        action_details: {
+          first_name: firstName,
+          last_name: lastName,
+          referral_code: referralCode,
+          created_at: new Date().toISOString(),
+        },
+        created_at: new Date().toISOString(),
+      });
 
-        // If there's an error message in the response data
-        if (data?.error) {
-          throw new Error(data.error);
-        }
+      if (logError) throw logError;
 
-        setMessage("Verification email sent. Please check your inbox.");
+      // Send magic link using Supabase Auth
+      const { error: authError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: "https://paynomadcapital.com/verify",
+        },
+      });
 
-        // Store email in sessionStorage for verification page
-        sessionStorage.setItem("registrationEmail", email);
+      if (authError) throw authError;
 
-        // Clear form
-        setFirstName("");
-        setLastName("");
-        setEmail("");
-        setReferralCode("");
+      setMessage("Verification email sent. Please check your inbox.");
 
-        // Redirect to home page after a short delay
-        setTimeout(() => {
-          navigate("/");
-        }, 3000);
-      } catch (err) {
-        console.error(`Registration attempt ${retryCount + 1} failed:`, err);
+      // Store email in sessionStorage for verification page
+      sessionStorage.setItem("registrationEmail", email);
 
-        if (retryCount < maxRetries) {
-          retryCount++;
-          const delay = 1000 * retryCount; // Exponential backoff
-          console.log(`Retrying registration in ${delay}ms...`);
-          setTimeout(invokeEdgeFunctionWithRetry, delay);
-        } else {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "An unexpected error occurred. Please try again later.",
-          );
-        }
-      } finally {
-        if (retryCount >= maxRetries || retryCount === 0) {
-          setIsLoading(false);
-        }
-      }
-    };
+      // Clear form
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setReferralCode("");
 
-    // Start the registration process with retry mechanism
-    invokeEdgeFunctionWithRetry();
+      // Redirect to home page after a short delay
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again later.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
