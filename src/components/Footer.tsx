@@ -534,7 +534,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="md:col-span-1 md:text-right md:ml-auto md:mr-16">
+          <div className="md:col-span-1 text-center md:text-center">
             <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>

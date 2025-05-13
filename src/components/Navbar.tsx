@@ -58,6 +58,18 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               {item.label}
             </button>
           ))}
+          <a
+            href="/register"
+            className="text-white bg-[#0077be] hover:bg-[#0066a6] px-4 py-2 rounded transition-colors duration-200 font-medium"
+          >
+            REGISTER
+          </a>
+          <a
+            href="#"
+            className="text-[#0077be] border border-[#0077be] px-4 py-2 rounded transition-colors duration-200 font-medium hover:bg-[#0077be] hover:text-white"
+          >
+            SIGN IN
+          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -79,11 +91,23 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               <button
                 key={item.id}
                 onClick={() => handleNavigation(item.id)}
-                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b]"
               >
                 {item.label}
               </button>
             ))}
+            <a
+              href="/register"
+              className="text-white bg-[#0077be] hover:bg-[#0066a6] py-2 px-4 rounded text-center font-medium"
+            >
+              REGISTER
+            </a>
+            <a
+              href="#"
+              className="text-[#0077be] border border-[#0077be] py-2 px-4 rounded text-center font-medium hover:bg-[#0077be] hover:text-white"
+            >
+              SIGN IN
+            </a>
           </div>
         </div>
       )}
