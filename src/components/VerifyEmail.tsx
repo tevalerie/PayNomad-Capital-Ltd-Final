@@ -6,15 +6,15 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 
 const formSchema = z.object({
-  firstName: z.string().min(1, { message: "First name is required" }),
-  lastName: z.string().min(1, { message: "Last name is required" }),
   email: z.string().email({ message: "Invalid email address" }),
-  referralCode: z.string().optional(),
+  verificationCode: z
+    .string()
+    .min(6, { message: "Verification code must be at least 6 characters" }),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
-const RegistrationPage: React.FC = () => {
+const VerifyEmail: React.FC = () => {
   const [submitStatus, setSubmitStatus] = useState<{
     success: boolean;
     message: string;
@@ -32,28 +32,30 @@ const RegistrationPage: React.FC = () => {
     try {
       setSubmitStatus({
         success: false,
-        message: "Processing your registration...",
+        message: "Verifying your email...",
       });
 
       // Log form data for debugging
       console.log("Form data being submitted:", data);
 
-      // Redirect to signin with message
+      // Simulate verification process
+      // In a real implementation, this would call an API endpoint
+
+      // Success message and redirect
       setSubmitStatus({
         success: true,
-        message:
-          "Success; proceed to reconfirm your email and complete the registration.",
+        message: "Email verified successfully. Redirecting to login...",
       });
 
       setTimeout(() => {
         window.location.href = "https://ebank.paynomadcapital.com/signin";
       }, 1500); // Short delay to show success message
     } catch (error: any) {
-      console.error("Error submitting form:", error);
+      console.error("Error verifying email:", error);
 
       setSubmitStatus({
         success: false,
-        message: "There was an error submitting your form. Please try again.",
+        message: "There was an error verifying your email. Please try again.",
       });
     }
   };
@@ -69,7 +71,7 @@ const RegistrationPage: React.FC = () => {
       {/* Mini Hero Section */}
       <div className="bg-[#2C3E50] h-[240px] flex items-center justify-center">
         <h1 className="text-white text-4xl md:text-5xl font-bold tracking-wider font-serif">
-          Create Your Account
+          Verify Your Email
         </h1>
       </div>
 
@@ -81,52 +83,6 @@ const RegistrationPage: React.FC = () => {
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-6"
           >
-            {/* First Name Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="firstName"
-                className="block text-base font-medium text-gray-700"
-              >
-                First Name
-              </label>
-              <input
-                id="firstName"
-                type="text"
-                placeholder="Enter your first name"
-                className={`w-full h-12 px-4 rounded-md border ${errors.firstName ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
-                {...register("firstName")}
-                aria-invalid={errors.firstName ? "true" : "false"}
-              />
-              {errors.firstName && (
-                <p className="text-red-500 text-sm">
-                  {errors.firstName.message}
-                </p>
-              )}
-            </div>
-
-            {/* Last Name Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="lastName"
-                className="block text-base font-medium text-gray-700"
-              >
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                type="text"
-                placeholder="Enter your last name"
-                className={`w-full h-12 px-4 rounded-md border ${errors.lastName ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
-                {...register("lastName")}
-                aria-invalid={errors.lastName ? "true" : "false"}
-              />
-              {errors.lastName && (
-                <p className="text-red-500 text-sm">
-                  {errors.lastName.message}
-                </p>
-              )}
-            </div>
-
             {/* Email Address Field */}
             <div className="space-y-2">
               <label
@@ -148,22 +104,27 @@ const RegistrationPage: React.FC = () => {
               )}
             </div>
 
-            {/* Referral Code Field */}
+            {/* Verification Code Field */}
             <div className="space-y-2">
               <label
-                htmlFor="referralCode"
+                htmlFor="verificationCode"
                 className="block text-base font-medium text-gray-700"
               >
-                Referral Code{" "}
-                <span className="text-[#6B96C3] text-sm">(optional)</span>
+                Verification Code
               </label>
               <input
-                id="referralCode"
+                id="verificationCode"
                 type="text"
-                placeholder="Kindly provide your reference code (optional)"
-                className="w-full h-12 px-4 rounded-md border border-[#EFF2F6] focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]"
-                {...register("referralCode")}
+                placeholder="Enter the code sent to your email"
+                className={`w-full h-12 px-4 rounded-md border ${errors.verificationCode ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
+                {...register("verificationCode")}
+                aria-invalid={errors.verificationCode ? "true" : "false"}
               />
+              {errors.verificationCode && (
+                <p className="text-red-500 text-sm">
+                  {errors.verificationCode.message}
+                </p>
+              )}
             </div>
 
             {/* Status Message */}
@@ -184,7 +145,7 @@ const RegistrationPage: React.FC = () => {
               </div>
             )}
 
-            {/* Continue Button */}
+            {/* Verify Button */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -212,17 +173,17 @@ const RegistrationPage: React.FC = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Processing...
+                  Verifying...
                 </>
               ) : (
-                "CONTINUE"
+                "VERIFY EMAIL"
               )}
             </button>
 
             {/* Quick Links */}
             <div className="text-center text-sm space-y-2">
               <div>
-                <span className="text-gray-600">Already have an account? </span>
+                <span className="text-gray-600">Already verified? </span>
                 <a
                   href="https://ebank.paynomadcapital.com/signin"
                   className="text-[#0077BE] underline hover:text-[#6B96C3]"
@@ -268,4 +229,4 @@ const RegistrationPage: React.FC = () => {
   );
 };
 
-export default RegistrationPage;
+export default VerifyEmail;
