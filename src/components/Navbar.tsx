@@ -109,12 +109,6 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               </button>
             ))}
             <a
-              href="/register"
-              className="text-[#6B96C3] hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b]"
-            >
-              REGISTER
-            </a>
-            <a
               href="https://ebank.paynomadcapital.com/signin"
               className="text-[#0077be] hover:text-[#6B96C3] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
             >

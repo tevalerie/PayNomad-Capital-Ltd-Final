@@ -5,10 +5,6 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Card } from "./ui/card";
 import { Send, CheckCircle } from "lucide-react";
-import emailjs from "@emailjs/browser";
-
-// Initialize EmailJS with public key
-emailjs.init("0Smk56TSivW-wtEJp");
 
 interface ContactSectionProps {
   title?: string;
@@ -81,33 +77,21 @@ const ContactSection: React.FC<ContactSectionProps> = ({
       setIsLoading(true);
       setEmailError("");
 
-      // EmailJS configuration
-      emailjs
-        .sendForm(
-          "service_tpp26lo", // Service ID
-          "template_jxqzh6n", // Template ID
-          formRef.current as HTMLFormElement,
-          "0Smk56TSivW-wtEJp", // Public key
-        )
-        .then((result) => {
-          console.log("Email sent successfully:", result.text);
-          setIsSubmitted(true);
+      // TODO: Replace with your new email sending solution
+      // Simulating email sending for now
+      setTimeout(() => {
+        console.log("Email would be sent with:", formState);
+        setIsSubmitted(true);
 
-          // Reset form after submission
-          setFormState({
-            name: "",
-            email: "",
-            phone: "",
-            message: "",
-          });
-        })
-        .catch((error) => {
-          console.error("Failed to send email:", error.text);
-          setEmailError("Failed to send your message. Please try again later.");
-        })
-        .finally(() => {
-          setIsLoading(false);
+        // Reset form after submission
+        setFormState({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
         });
+        setIsLoading(false);
+      }, 1000);
     }
   };
 
