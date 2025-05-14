@@ -162,10 +162,9 @@ const VerifyEmail = () => {
             setTimeout(() => {
               try {
                 if (newSessionData?.session?.access_token) {
-                  window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${newSessionData.session.access_token}`;
+                  window.location.href = `${window.location.origin}?access_token=${newSessionData.session.access_token}`;
                 } else {
-                  window.location.href =
-                    "https://ebank.paynomadcapital.com/signup";
+                  window.location.href = window.location.origin;
                 }
               } catch (redirectErr) {
                 console.error("Redirect error:", redirectErr);
