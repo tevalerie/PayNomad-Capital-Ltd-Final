@@ -1,64 +1,113 @@
-import React, { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  verificationCode: z
-    .string()
-    .min(6, { message: "Verification code must be at least 6 characters" }),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
 const VerifyEmail: React.FC = () => {
-  const [submitStatus, setSubmitStatus] = useState<{
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [status, setStatus] = useState<{
+    loading: boolean;
     success: boolean;
     message: string;
-  } | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+  }>({
+    loading: true,
+    success: false,
+    message: "Verifying your email...",
   });
 
-  const onSubmit = async (data: FormData) => {
-    try {
-      setSubmitStatus({
-        success: false,
-        message: "Verifying your email...",
-      });
+  useEffect(() => {
+    const verifyEmail = async () => {
+      try {
+        // Extract token from URL
+        const token = searchParams.get("token");
+        const type = searchParams.get("type");
+        const email = searchParams.get("email");
 
-      // Log form data for debugging
-      console.log("Form data being submitted:", data);
+        if (!token) {
+          setStatus({
+            loading: false,
+            success: false,
+            message:
+              "Verification token is missing. Please check your email link.",
+          });
+          return;
+        }
 
-      // Simulate verification process
-      // In a real implementation, this would call an API endpoint
+        if (type === "signup" || type === "email_change") {
+          // Verify the email with Supabase
+          const { error } = await supabase.auth.verifyOtp({
+            token,
+            type: "email",
+            email: email || "",
+          });
 
-      // Success message and redirect
-      setSubmitStatus({
-        success: true,
-        message: "Email verified successfully. Redirecting to login...",
-      });
+          if (error) {
+            console.error("Verification error:", error);
+            setStatus({
+              loading: false,
+              success: false,
+              message: `Email verification failed: ${error.message}`,
+            });
+          } else {
+            // Update user profile in the database if needed
+            // This could be used to set a verified flag or update other user data
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
 
-      setTimeout(() => {
-        window.location.href = "https://ebank.paynomadcapital.com/login";
-      }, 1500); // Short delay to show success message
-    } catch (error: any) {
-      console.error("Error verifying email:", error);
+            if (user) {
+              // Optional: Update user metadata or profile in your database
+              const { error: updateError } = await supabase
+                .from("profiles")
+                .update({ email_verified: true })
+                .eq("id", user.id);
 
-      setSubmitStatus({
-        success: false,
-        message: "There was an error verifying your email. Please try again.",
-      });
-    }
-  };
+              if (updateError) {
+                console.error("Error updating profile:", updateError);
+              }
+            }
+
+            setStatus({
+              loading: false,
+              success: true,
+              message: "Email verified successfully! Redirecting to login...",
+            });
+
+            // Redirect to login after successful verification
+            setTimeout(() => {
+              window.location.href = "https://ebank.paynomadcapital.com/login";
+            }, 3000);
+          }
+        } else if (type === "recovery") {
+          // Handle password reset verification
+          setStatus({
+            loading: false,
+            success: true,
+            message: "Please set your new password.",
+          });
+          // Redirect to password reset page
+          navigate("/reset-password", { state: { token, email } });
+        } else {
+          setStatus({
+            loading: false,
+            success: false,
+            message: "Invalid verification type.",
+          });
+        }
+      } catch (error: any) {
+        console.error("Error during verification:", error);
+        setStatus({
+          loading: false,
+          success: false,
+          message: `An unexpected error occurred: ${error.message || error}`,
+        });
+      }
+    };
+
+    verifyEmail();
+  }, [searchParams, navigate]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -71,117 +120,78 @@ const VerifyEmail: React.FC = () => {
       {/* Mini Hero Section */}
       <div className="bg-[#2C3E50] h-[240px] flex items-center justify-center">
         <h1 className="text-white text-4xl md:text-5xl font-bold tracking-wider font-serif">
-          Verify Your Email
+          Email Verification
         </h1>
       </div>
 
-      {/* Form Card */}
+      {/* Status Card */}
       <div className="container mx-auto px-4 -mt-20 mb-16">
         <div className="max-w-[480px] mx-auto bg-white rounded-2xl shadow-md p-6 md:p-8">
-          <form
-            ref={formRef}
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-6"
-          >
-            {/* Email Address Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="block text-base font-medium text-gray-700"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="name@company.com"
-                className={`w-full h-12 px-4 rounded-md border ${errors.email ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
-                {...register("email")}
-                aria-invalid={errors.email ? "true" : "false"}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email.message}</p>
-              )}
-            </div>
-
-            {/* Verification Code Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="verificationCode"
-                className="block text-base font-medium text-gray-700"
-              >
-                Verification Code
-              </label>
-              <input
-                id="verificationCode"
-                type="text"
-                placeholder="Enter the code sent to your email"
-                className={`w-full h-12 px-4 rounded-md border ${errors.verificationCode ? "border-red-500" : "border-[#EFF2F6]"} focus:outline-none focus:border-[#0077BE] focus:ring-1 focus:ring-[#0077BE]`}
-                {...register("verificationCode")}
-                aria-invalid={errors.verificationCode ? "true" : "false"}
-              />
-              {errors.verificationCode && (
-                <p className="text-red-500 text-sm">
-                  {errors.verificationCode.message}
+          <div className="flex flex-col items-center justify-center space-y-6 py-8">
+            {status.loading ? (
+              <>
+                <div className="w-16 h-16 border-4 border-[#0077BE] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-lg text-center text-gray-700">
+                  {status.message}
                 </p>
-              )}
-            </div>
-
-            {/* Status Message */}
-            {submitStatus && (
-              <div
-                className={`p-3 rounded-md ${submitStatus.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
-              >
-                {submitStatus.message}
-                {!submitStatus.success && (
-                  <button
-                    className="ml-2 underline text-sm font-medium"
-                    onClick={() => setSubmitStatus(null)}
-                    type="button"
-                  >
-                    Dismiss
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Verify Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-[#0077BE] text-white uppercase tracking-wider py-3 rounded-lg font-medium hover:bg-[#6B96C3] transition-colors duration-200 transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center"
-            >
-              {isSubmitting ? (
-                <>
+              </>
+            ) : status.success ? (
+              <>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 text-green-500"
                     fill="none"
                     viewBox="0 0 24 24"
+                    stroke="currentColor"
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
                     <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
-                  Verifying...
-                </>
-              ) : (
-                "VERIFY EMAIL"
-              )}
-            </button>
+                </div>
+                <p className="text-lg text-center text-green-700">
+                  {status.message}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 text-red-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </div>
+                <p className="text-lg text-center text-red-700">
+                  {status.message}
+                </p>
+              </>
+            )}
 
             {/* Quick Links */}
-            <div className="text-center text-sm space-y-2">
+            <div className="text-center text-sm space-y-2 pt-4">
+              <div>
+                <span className="text-gray-600">Return to </span>
+                <a
+                  href="/"
+                  className="text-[#0077BE] underline hover:text-[#6B96C3]"
+                >
+                  Home Page
+                </a>
+              </div>
               <div>
                 <span className="text-gray-600">Already verified? </span>
                 <a
@@ -191,34 +201,8 @@ const VerifyEmail: React.FC = () => {
                   Sign In
                 </a>
               </div>
-              <div className="flex justify-center flex-wrap gap-4 pt-2">
-                <a
-                  href="/#about"
-                  className="text-[#0077BE] hover:text-[#6B96C3]"
-                >
-                  About Us
-                </a>
-                <a
-                  href="/#services"
-                  className="text-[#0077BE] hover:text-[#6B96C3]"
-                >
-                  Services
-                </a>
-                <a
-                  href="/#insights"
-                  className="text-[#0077BE] hover:text-[#6B96C3]"
-                >
-                  Insights
-                </a>
-                <a
-                  href="/#contact"
-                  className="text-[#0077BE] hover:text-[#6B96C3]"
-                >
-                  Contact
-                </a>
-              </div>
             </div>
-          </form>
+          </div>
         </div>
       </div>
 

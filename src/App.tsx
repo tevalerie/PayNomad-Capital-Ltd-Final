@@ -16,6 +16,7 @@ function App() {
         <Route path="/register" element={<RegistrationPage />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/verify" element={<VerifyEmail />} />
+        <Route path="/auth/callback" element={<VerifyEmail />} />
         {/* Add more routes as needed */}
 
         {/* Add this before the catchall route */}
