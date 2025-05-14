@@ -38,22 +38,45 @@ const RegistrationPage: React.FC = () => {
       // Log form data for debugging
       console.log("Form data being submitted:", data);
 
-      // Redirect to signin with message
-      setSubmitStatus({
-        success: true,
-        message:
-          "Success; proceed to reconfirm your email and complete the registration.",
+      // Store user data in contacts table
+      const { error: contactError } = await supabase.from("contacts").insert([
+        {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          referral_code: data.referralCode || null,
+        },
+      ]);
+
+      if (contactError) {
+        throw new Error(`Error storing contact: ${contactError.message}`);
+      }
+
+      // Send magic link email
+      const { error } = await supabase.auth.signInWithOtp({
+        email: data.email,
+        options: {
+          emailRedirectTo: "https://www.paynomadcapital.com/verify",
+        },
       });
 
-      setTimeout(() => {
-        window.location.href = "https://ebank.paynomadcapital.com/login";
-      }, 1500); // Short delay to show success message
+      if (error) {
+        throw new Error(`Error sending magic link: ${error.message}`);
+      }
+
+      // Show success message
+      setSubmitStatus({
+        success: true,
+        message: "Success! Please check your email for a verification link.",
+      });
     } catch (error: any) {
       console.error("Error submitting form:", error);
 
       setSubmitStatus({
         success: false,
-        message: "There was an error submitting your form. Please try again.",
+        message:
+          error.message ||
+          "There was an error submitting your form. Please try again.",
       });
     }
   };
