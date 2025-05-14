@@ -28,7 +28,17 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
   }, []);
 
   const handleNavigation = (sectionId: string) => {
-    onNavigate(sectionId);
+    // Check if we're on the home page
+    const isHomePage = window.location.pathname === "/";
+
+    if (isHomePage) {
+      // If on home page, just navigate to the section
+      onNavigate(sectionId);
+    } else {
+      // If not on home page, navigate to home page with section hash
+      window.location.href = `/#${sectionId}`;
+    }
+
     setIsMobileMenuOpen(false);
   };
 
@@ -40,10 +50,7 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
       )}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <a
-          href="https://paynomadcapitalltd.com"
-          className="text-white font-bold text-xl md:text-2xl"
-        >
+        <a href="/" className="text-white font-bold text-xl md:text-2xl">
           PayNomad Capital
         </a>
 
@@ -58,6 +65,18 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               {item.label}
             </button>
           ))}
+          <a
+            href="/register"
+            className="text-white bg-[#0077be] hover:bg-[#0066a6] px-4 py-2 rounded transition-colors duration-200 font-medium"
+          >
+            REGISTER
+          </a>
+          <a
+            href="https://ebank.paynomadcapital.com/login"
+            className="text-[#0077be] hover:text-[#6B96C3] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+          >
+            SIGN IN
+          </a>
         </div>
 
         {/* Mobile Menu Button */}
@@ -79,11 +98,23 @@ const Navbar = ({ onNavigate = () => {} }: NavbarProps) => {
               <button
                 key={item.id}
                 onClick={() => handleNavigation(item.id)}
-                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+                className="text-white hover:text-[#0077be] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b]"
               >
                 {item.label}
               </button>
             ))}
+            <a
+              href="/register"
+              className="text-white bg-[#0077be] hover:bg-[#0066a6] py-2 px-4 rounded text-center font-medium"
+            >
+              REGISTER
+            </a>
+            <a
+              href="https://ebank.paynomadcapital.com/login"
+              className="text-[#0077be] hover:text-[#6B96C3] transition-colors duration-200 font-medium text-left py-2 border-b border-[#3a506b] last:border-0"
+            >
+              SIGN IN
+            </a>
           </div>
         </div>
       )}
