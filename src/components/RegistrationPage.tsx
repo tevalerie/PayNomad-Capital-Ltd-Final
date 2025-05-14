@@ -63,7 +63,7 @@ const RegistrationPage: React.FC = () => {
       const { error } = await supabase.auth.signInWithOtp({
         email: data.email,
         options: {
-          emailRedirectTo: "https://www.paynomadcapital.com/verify",
+          emailRedirectTo: window.location.origin + "/verify",
         },
       });
 
