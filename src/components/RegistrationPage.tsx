@@ -2,15 +2,9 @@ import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createClient } from "@supabase/supabase-js";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-
-// Initialize Supabase client
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-);
+import { supabase } from "../supabaseClient";
 
 const formSchema = z.object({
   firstName: z.string().min(1, { message: "First name is required" }),
