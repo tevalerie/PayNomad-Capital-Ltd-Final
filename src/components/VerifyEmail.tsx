@@ -9,12 +9,7 @@ import {
 import { Button } from "./ui/button";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-);
+import { supabase } from "../supabaseClient";
 
 const VerifyEmail = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">(

@@ -101,7 +101,7 @@ const RegistrationPage = () => {
       const { error: authError } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: "https://paynomadcapital.com/verify",
+          emailRedirectTo: `${window.location.origin}/verify`,
         },
       });
 
