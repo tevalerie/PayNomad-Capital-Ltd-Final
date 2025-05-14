@@ -82,6 +82,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<RegistrationPage />} />
+      <Route path="/register-simple" element={<Register />} />
       <Route path="/verify" element={<VerifyEmail />} />
 
       {/* Add this before any catchall route */}

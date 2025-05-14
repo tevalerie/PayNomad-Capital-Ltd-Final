@@ -104,7 +104,10 @@ const Register: React.FC = () => {
 
       if (logError) console.error("Failed to log signup attempt:", logError);
 
-      const redirectTo = `${window.location.origin}/verify`; // Use dynamic origin for local development
+      // Make sure we're using the correct domain for the redirect
+      const baseUrl = window.location.origin;
+      const redirectTo = `${baseUrl}/verify`; // Use dynamic origin for local development
+      console.log("Base URL for redirect:", baseUrl);
       console.log(
         "Attempting signInWithOtp with email:",
         email,

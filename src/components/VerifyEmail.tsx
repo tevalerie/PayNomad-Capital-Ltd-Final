@@ -83,9 +83,11 @@ const VerifyEmail = () => {
             try {
               // If we have session data with access token, use it
               if (sessionData?.session?.access_token) {
+                console.log("Redirecting with access token");
                 window.location.href = `${window.location.origin}?access_token=${sessionData.session.access_token}`;
               } else {
                 // Fallback to just redirecting without token
+                console.log("Redirecting without access token");
                 window.location.href = window.location.origin;
               }
             } catch (redirectErr) {
@@ -194,8 +196,10 @@ const VerifyEmail = () => {
             setTimeout(() => {
               try {
                 if (newSessionData?.session?.access_token) {
+                  console.log("Redirecting with new session access token");
                   window.location.href = `${window.location.origin}?access_token=${newSessionData.session.access_token}`;
                 } else {
+                  console.log("Redirecting without new session access token");
                   window.location.href = window.location.origin;
                 }
               } catch (redirectErr) {
