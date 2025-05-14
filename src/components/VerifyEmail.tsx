@@ -81,16 +81,15 @@ const VerifyEmail = () => {
             try {
               // If we have session data with access token, use it
               if (sessionData?.session?.access_token) {
-                window.location.href = `https://ebank.paynomadcapital.com/signup?access_token=${sessionData.session.access_token}`;
+                window.location.href = `${window.location.origin}?access_token=${sessionData.session.access_token}`;
               } else {
                 // Fallback to just redirecting without token
-                window.location.href =
-                  "https://ebank.paynomadcapital.com/signup";
+                window.location.href = window.location.origin;
               }
             } catch (redirectErr) {
               console.error("Redirect error:", redirectErr);
               // Fallback if redirect fails
-              window.location.href = "https://ebank.paynomadcapital.com/signup";
+              window.location.href = window.location.origin;
             }
           }, 2500);
         } else {
@@ -168,8 +167,7 @@ const VerifyEmail = () => {
                 }
               } catch (redirectErr) {
                 console.error("Redirect error:", redirectErr);
-                window.location.href =
-                  "https://ebank.paynomadcapital.com/signup";
+                window.location.href = window.location.origin;
               }
             }, 2500);
           } else {
