@@ -104,11 +104,17 @@ const VerifyEmail = () => {
             return;
           }
 
-          // Try to exchange the token for a session
-          const { error: exchangeError } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: "email",
-          });
+          // Try to exchange the token for a session with better error handling
+          console.log("Attempting to verify OTP with token");
+          const { data: verifyData, error: exchangeError } =
+            await supabase.auth.verifyOtp({
+              token_hash: token,
+              type: "email",
+            });
+
+          if (verifyData) {
+            console.log("OTP verification successful");
+          }
 
           if (exchangeError) {
             throw exchangeError;

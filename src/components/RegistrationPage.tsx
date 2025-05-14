@@ -112,34 +112,76 @@ const RegistrationPage = () => {
         console.error("Error logging signup attempt:", logError);
       }
 
-      // Send magic link using Supabase Auth
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/verify`,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            referral_code: referralCode,
-            intent: "signup",
+      // Send magic link using Supabase Auth with more detailed error handling
+      try {
+        const { error: authError } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/verify`,
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              referral_code: referralCode,
+              intent: "signup",
+            },
           },
-        },
-      });
+        });
 
-      if (authError) {
-        console.error("Supabase signInWithOtp error:", authError);
+        if (authError) {
+          console.error("Supabase signInWithOtp error:", authError);
 
-        // If there was an error sending the email, update the contacts status
+          // Log more details about the error for debugging
+          console.log("Error details:", {
+            code: authError.code,
+            name: authError.name,
+            message: authError.message,
+            status: authError.status,
+          });
+
+          // If there was an error sending the email, update the contacts status
+          await supabase
+            .from("contacts")
+            .update({
+              status: "email_failed",
+              error_details: authError.message,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("email", email);
+
+          let errorMessage = "Error sending verification email. ";
+
+          // Provide more specific error messages based on common issues
+          if (authError.message.includes("rate limit")) {
+            errorMessage +=
+              "Too many attempts. Please try again in a few minutes.";
+          } else if (authError.message.includes("Invalid email")) {
+            errorMessage += "Please check that your email address is correct.";
+          } else {
+            errorMessage += `${authError.message}. Please try again later.`;
+          }
+
+          setError(errorMessage);
+          setIsLoading(false);
+          return;
+        }
+      } catch (unexpectedError) {
+        console.error("Unexpected error during OTP process:", unexpectedError);
+
+        // Update contacts table with error status
         await supabase
           .from("contacts")
           .update({
             status: "email_failed",
+            error_details:
+              unexpectedError instanceof Error
+                ? unexpectedError.message
+                : "Unknown error",
             updated_at: new Date().toISOString(),
           })
           .eq("email", email);
 
         setError(
-          `Error sending verification email: ${authError.message}. Please try again later.`,
+          "An unexpected error occurred while sending the verification email. Please try again later.",
         );
         setIsLoading(false);
         return;
