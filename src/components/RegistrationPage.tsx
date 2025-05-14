@@ -67,17 +67,32 @@ const RegistrationPage = () => {
 
     try {
       // Store user data in contacts table
-      const { error: insertError } = await supabase.from("contacts").insert({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        referral_code: referralCode,
-        status: "pending",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+      const { data: contactData, error: insertError } = await supabase
+        .from("contacts")
+        .insert({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          referral_code: referralCode,
+          status: "pending",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Error inserting into contacts:", insertError);
+        if (insertError.code === "23505") {
+          // Postgres unique violation code
+          setError(
+            "This email is already registered. Please use a different email.",
+          );
+        } else {
+          setError(`Error creating contact record: ${insertError.message}`);
+        }
+        setIsLoading(false);
+        return;
+      }
 
       // Log signup attempt to userData table
       try {
@@ -102,10 +117,33 @@ const RegistrationPage = () => {
         email,
         options: {
           emailRedirectTo: `${window.location.origin}/verify`,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            referral_code: referralCode,
+            intent: "signup",
+          },
         },
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Supabase signInWithOtp error:", authError);
+
+        // If there was an error sending the email, update the contacts status
+        await supabase
+          .from("contacts")
+          .update({
+            status: "email_failed",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("email", email);
+
+        setError(
+          `Error sending verification email: ${authError.message}. Please try again later.`,
+        );
+        setIsLoading(false);
+        return;
+      }
 
       setMessage("Verification email sent. Please check your inbox.");
 

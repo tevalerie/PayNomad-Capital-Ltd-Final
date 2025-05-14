@@ -143,6 +143,31 @@ const VerifyEmail = () => {
                 console.error("Error updating contact status:", updateError);
               }
 
+              // Create or update profile for the user
+              const { id: user_id, user_metadata } =
+                newSessionData.session.user;
+              const { error: profileError } = await supabase
+                .from("profiles")
+                .upsert(
+                  [
+                    {
+                      user_id,
+                      full_name:
+                        user_metadata?.first_name && user_metadata?.last_name
+                          ? `${user_metadata.first_name} ${user_metadata.last_name}`
+                          : "User",
+                      referral_code: user_metadata?.referral_code,
+                      is_email_verified: true,
+                      updated_at: new Date().toISOString(),
+                    },
+                  ],
+                  { onConflict: "user_id" },
+                );
+
+              if (profileError) {
+                console.error("Error creating/updating profile:", profileError);
+              }
+
               // Log verification success
               try {
                 await supabase.from("userData").insert({
