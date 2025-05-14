@@ -2,6 +2,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useRoutes, Routes, Route, useNavigate } from "react-router-dom";
 import Home from "./components/home";
 import RegistrationPage from "./components/RegistrationPage";
+import Register from "./components/Register";
 import VerifyEmail from "./components/VerifyEmail";
 import TestConnection from "./components/TestConnection";
 import NetworkStatus from "./components/NetworkStatus";
@@ -72,38 +73,20 @@ function ErrorBoundary({ children }) {
 }
 
 function App() {
+  // For the tempo routes
+  {
+    import.meta.env.VITE_TEMPO && useRoutes(routes);
+  }
+
   return (
-    <ErrorBoundary>
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0077be]"></div>
-          </div>
-        }
-      >
-        <>
-          {/* Tempo routes must be included before the catchall route */}
-          {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/register" element={<RegistrationPage />} />
+      <Route path="/verify" element={<VerifyEmail />} />
 
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<RegistrationPage />} />
-            <Route path="/verify" element={<VerifyEmail />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/auth/callback" element={<VerifyEmail />} />
-            <Route path="/test-connection" element={<TestConnection />} />
-
-            {/* Add this before the catchall route */}
-            {import.meta.env.VITE_TEMPO === "true" && (
-              <Route path="/tempobook/*" />
-            )}
-          </Routes>
-
-          {/* Network status indicator */}
-          <NetworkStatus showOfflineOnly={true} />
-        </>
-      </Suspense>
-    </ErrorBoundary>
+      {/* Add this before any catchall route */}
+      {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
+    </Routes>
   );
 }
 

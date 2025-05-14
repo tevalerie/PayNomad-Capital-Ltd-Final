@@ -8,10 +8,8 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-);
+// Use the imported supabase client instead of creating a new one
+import { supabase } from "../supabaseClient";
 
 const RegistrationPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -66,6 +64,8 @@ const RegistrationPage = () => {
     setIsLoading(true);
 
     try {
+      console.log("Starting registration process for email:", email);
+
       // Store user data in contacts table
       const { data: contactData, error: insertError } = await supabase
         .from("contacts")
@@ -94,9 +94,12 @@ const RegistrationPage = () => {
         return;
       }
 
+      console.log("Successfully inserted contact data:", contactData);
+
       // Log signup attempt to userData table
       try {
-        await supabase.from("userData").insert({
+        console.log("Attempting to log signup attempt to userData table");
+        const userDataPayload = {
           email,
           action: "signup_attempt",
           action_details: {
@@ -106,15 +109,35 @@ const RegistrationPage = () => {
             created_at: new Date().toISOString(),
           },
           created_at: new Date().toISOString(),
-        });
+        };
+        console.log("userData payload:", userDataPayload);
+
+        const { data: logData, error: logError } = await supabase
+          .from("userData")
+          .insert(userDataPayload);
+
+        if (logError) {
+          console.error("Error logging signup attempt:", logError);
+          console.log("Log error details:", {
+            code: logError.code,
+            message: logError.message,
+            details: logError.details,
+            hint: logError.hint,
+          });
+        } else {
+          console.log("Successfully logged signup attempt");
+        }
       } catch (logError) {
         // Continue even if logging fails
-        console.error("Error logging signup attempt:", logError);
+        console.error("Exception during logging signup attempt:", logError);
       }
 
       // Send magic link using Supabase Auth with more detailed error handling
       try {
-        const { error: authError } = await supabase.auth.signInWithOtp({
+        console.log("Attempting to send magic link to:", email);
+        console.log("Redirect URL:", `${window.location.origin}/verify`);
+
+        const otpOptions = {
           email,
           options: {
             emailRedirectTo: `${window.location.origin}/verify`,
@@ -125,7 +148,12 @@ const RegistrationPage = () => {
               intent: "signup",
             },
           },
-        });
+        };
+
+        console.log("OTP options:", JSON.stringify(otpOptions, null, 2));
+
+        const { data: otpData, error: authError } =
+          await supabase.auth.signInWithOtp(otpOptions);
 
         if (authError) {
           console.error("Supabase signInWithOtp error:", authError);
@@ -164,6 +192,8 @@ const RegistrationPage = () => {
           setIsLoading(false);
           return;
         }
+
+        console.log("Magic link sent successfully", otpData);
       } catch (unexpectedError) {
         console.error("Unexpected error during OTP process:", unexpectedError);
 
