@@ -1,5 +1,7 @@
-import { Suspense, useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import { useRoutes, Routes, Route, useNavigate } from "react-router-dom";
+import MagicLinkRegister from "./components/MagicLinkRegister";
+import VerifyMagicLink from "./components/VerifyMagicLink";
 import Home from "./components/home";
 import RegistrationPage from "./components/RegistrationPage";
 import Register from "./components/Register";

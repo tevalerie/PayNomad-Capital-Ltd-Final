@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MagicLinks } from "@magiclinks/client";
+import { MagicLinks } from "../utils/magicLinks";
 import { supabase } from "../supabaseClient";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
