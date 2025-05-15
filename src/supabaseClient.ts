@@ -11,6 +11,8 @@ export const supabase = createClient(
       detectSessionInUrl: true,
       flowType: "pkce", // Use PKCE flow for better security
       debug: true, // Enable debug mode for auth
+      storageKey: "supabase.auth.token", // Explicit storage key
+      storage: window.localStorage, // Explicitly use localStorage
     },
   },
 );

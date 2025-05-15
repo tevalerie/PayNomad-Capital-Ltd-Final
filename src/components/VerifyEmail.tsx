@@ -154,17 +154,61 @@ const VerifyEmail = () => {
               // Create or update profile for the user
               const { id: user_id, user_metadata } =
                 newSessionData.session.user;
+
+              console.log("User metadata from session:", user_metadata);
+
+              // If user_metadata is missing, try to get it from the contacts table
+              let firstName = user_metadata?.first_name;
+              let lastName = user_metadata?.last_name;
+              let referralCode = user_metadata?.referral_code;
+
+              if (!firstName || !lastName) {
+                console.log(
+                  "User metadata missing, fetching from contacts table",
+                );
+                const { data: contactData, error: contactError } =
+                  await supabase
+                    .from("contacts")
+                    .select("first_name, last_name, referral_code")
+                    .eq("email", newSessionData.session.user.email)
+                    .single();
+
+                if (contactData && !contactError) {
+                  console.log("Retrieved data from contacts:", contactData);
+                  firstName = contactData.first_name;
+                  lastName = contactData.last_name;
+                  referralCode = contactData.referral_code;
+
+                  // Update the user metadata since it wasn't set properly
+                  console.log("Updating user metadata with contact data");
+                  await supabase.auth.updateUser({
+                    data: {
+                      first_name: firstName,
+                      last_name: lastName,
+                      referral_code: referralCode,
+                      updated_at: new Date().toISOString(),
+                    },
+                  });
+                } else {
+                  console.error("Error fetching contact data:", contactError);
+                }
+              }
+
+              const fullName =
+                firstName && lastName ? `${firstName} ${lastName}` : "User";
+              console.log(
+                "Creating/updating profile with full_name:",
+                fullName,
+              );
+
               const { error: profileError } = await supabase
                 .from("profiles")
                 .upsert(
                   [
                     {
                       user_id,
-                      full_name:
-                        user_metadata?.first_name && user_metadata?.last_name
-                          ? `${user_metadata.first_name} ${user_metadata.last_name}`
-                          : "User",
-                      referral_code: user_metadata?.referral_code,
+                      full_name: fullName,
+                      referral_code: referralCode,
                       is_email_verified: true,
                       updated_at: new Date().toISOString(),
                     },

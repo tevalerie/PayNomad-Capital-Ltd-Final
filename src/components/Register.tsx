@@ -124,18 +124,43 @@ const Register: React.FC = () => {
       const baseUrl = window.location.origin;
       const redirectTo = `${baseUrl}/verify`; // Use dynamic origin for local development
       console.log("Base URL for redirect:", baseUrl);
+
+      // Create metadata payload with timestamp to ensure it's unique
+      const metadataPayload = {
+        first_name,
+        last_name,
+        referral_code,
+        intent,
+        timestamp: new Date().toISOString(),
+      };
+
       console.log(
         "Attempting signInWithOtp with email:",
         email,
         "redirectTo:",
         redirectTo,
+        "metadata:",
+        metadataPayload,
       );
-      const { error: authError } = await supabase.auth.signInWithOtp({
+
+      // Clear any existing session before attempting to sign in
+      await supabase.auth.signOut();
+
+      const { data: otpData, error: authError } =
+        await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: redirectTo,
+            data: metadataPayload,
+          },
+        });
+
+      // Store debug information
+      setDebugInfo({
         email,
-        options: {
-          emailRedirectTo: redirectTo,
-          data: { first_name, last_name, referral_code, intent },
-        },
+        redirectTo,
+        metadataPayload,
+        otpResponse: otpData || { error: authError },
       });
 
       if (authError) {
