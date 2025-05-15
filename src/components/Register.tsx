@@ -12,6 +12,7 @@ const Register: React.FC = () => {
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
   const [searchParams] = useSearchParams();
   const intent = searchParams.get("intent") || "signup";
 

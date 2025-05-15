@@ -4,6 +4,7 @@ import Home from "./components/home";
 import RegistrationPage from "./components/RegistrationPage";
 import Register from "./components/Register";
 import VerifyEmail from "./components/VerifyEmail";
+import Verify from "./components/Verify";
 import TestConnection from "./components/TestConnection";
 import NetworkStatus from "./components/NetworkStatus";
 import routes from "tempo-routes";
@@ -84,6 +85,9 @@ function App() {
       <Route path="/register" element={<RegistrationPage />} />
       <Route path="/register-simple" element={<Register />} />
       <Route path="/verify" element={<VerifyEmail />} />
+      <Route path="/verify-simple" element={<Verify />} />
+      <Route path="/register-magic" element={<MagicLinkRegister />} />
+      <Route path="/verify-magic" element={<VerifyMagicLink />} />
 
       {/* Add this before any catchall route */}
       {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
