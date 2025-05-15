@@ -9,6 +9,8 @@ export const supabase = createClient(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
+      flowType: "pkce", // Use PKCE flow for better security
+      debug: true, // Enable debug mode for auth
     },
   },
 );
@@ -27,4 +29,20 @@ console.log("Supabase client initialized with auth config:", {
   autoRefreshToken: true,
   persistSession: true,
   detectSessionInUrl: true,
+  flowType: "pkce",
+  debug: true,
+});
+
+// Add auth state change listener for debugging
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log("Auth state changed:", event);
+  if (session) {
+    console.log("New session established:", {
+      user_id: session.user.id,
+      has_user_metadata: !!session.user.user_metadata,
+      user_metadata: session.user.user_metadata,
+    });
+  } else {
+    console.log("No session available after auth state change");
+  }
 });

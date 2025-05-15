@@ -169,6 +169,7 @@ const Register: React.FC = () => {
           value={formData.first_name}
           onChange={handleChange}
           className="form-input"
+          required
         />
         <input
           type="text"
@@ -177,6 +178,7 @@ const Register: React.FC = () => {
           value={formData.last_name}
           onChange={handleChange}
           className="form-input"
+          required
         />
         <input
           type="email"
@@ -185,6 +187,7 @@ const Register: React.FC = () => {
           value={formData.email}
           onChange={handleChange}
           className="form-input"
+          required
         />
         <input
           type="text"
@@ -193,6 +196,7 @@ const Register: React.FC = () => {
           value={formData.referral_code}
           onChange={handleChange}
           className="form-input"
+          required
         />
         <button
           onClick={handleSubmit}
@@ -202,6 +206,38 @@ const Register: React.FC = () => {
           {loading ? "Sending..." : "Send Magic Link"}
         </button>
         {message && <p className="message">{message}</p>}
+
+        {debugInfo && (
+          <div
+            className="debug-info"
+            style={{
+              marginTop: "20px",
+              padding: "10px",
+              backgroundColor: "#f0f0f0",
+              borderRadius: "5px",
+            }}
+          >
+            <h3>Debug Information</h3>
+            <p>
+              <strong>Email:</strong> {debugInfo.email}
+            </p>
+            <p>
+              <strong>Redirect URL:</strong> {debugInfo.redirectTo}
+            </p>
+            <p>
+              <strong>Metadata Payload:</strong>
+            </p>
+            <pre style={{ whiteSpace: "pre-wrap", fontSize: "12px" }}>
+              {JSON.stringify(debugInfo.metadataPayload, null, 2)}
+            </pre>
+            <p>
+              <strong>OTP Response:</strong>
+            </p>
+            <pre style={{ whiteSpace: "pre-wrap", fontSize: "12px" }}>
+              {JSON.stringify(debugInfo.otpResponse, null, 2)}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   );
