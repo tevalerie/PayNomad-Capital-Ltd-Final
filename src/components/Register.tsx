@@ -63,6 +63,15 @@ const Register: React.FC = () => {
         status: "pending",
         verification_token: intent,
       });
+      console.log("Attempting to insert contact with:", {
+        first_name,
+        last_name,
+        email,
+        referral_code,
+        status: "pending",
+        verification_token: intent,
+      });
+
       const { data: contactData, error: contactError } = await supabase
         .from("contacts")
         .insert([
@@ -73,10 +82,17 @@ const Register: React.FC = () => {
             referral_code,
             status: "pending",
             verification_token: intent,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
         ])
         .select()
         .single();
+
+      console.log("Contact insert result:", {
+        data: contactData,
+        error: contactError,
+      });
 
       if (contactError) {
         console.error("Contact insert error:", contactError);
