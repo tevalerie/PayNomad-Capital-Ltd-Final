@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-);
 
 const TestConnection = () => {
   const [result, setResult] = useState<string>("");
@@ -18,24 +12,27 @@ const TestConnection = () => {
     setResult("");
     setError("");
 
-    // Retry mechanism for edge function calls
+    // Retry mechanism for API calls
     const maxRetries = 3;
     let retryCount = 0;
 
     const invokeWithRetry = async () => {
       try {
         console.log(
-          `Testing connection to Edge Function (attempt ${retryCount + 1})...`,
-        );
-        console.log("VITE_SUPABASE_URL:", import.meta.env.VITE_SUPABASE_URL);
-
-        const { data, error } = await supabase.functions.invoke(
-          "supabase-functions-test-connection",
-          {},
+          `Testing connection to Netlify Function (attempt ${retryCount + 1})...`,
         );
 
-        if (error) {
-          throw new Error(error.message || JSON.stringify(error));
+        const response = await fetch("/.netlify/functions/test-connection", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || JSON.stringify(data));
         }
 
         console.log("Connection test result:", data);
@@ -64,49 +61,53 @@ const TestConnection = () => {
     invokeWithRetry();
   };
 
-  const testOriginalFunction = async () => {
+  const testSubmitFunction = async () => {
     setIsLoading(true);
     setResult("");
     setError("");
 
-    // Retry mechanism for edge function calls
+    // Retry mechanism for API calls
     const maxRetries = 3;
     let retryCount = 0;
 
     const invokeWithRetry = async () => {
       try {
         console.log(
-          `Testing original signup function (attempt ${retryCount + 1})...`,
+          `Testing submit application function (attempt ${retryCount + 1})...`,
         );
 
-        const { data, error } = await supabase.functions.invoke(
-          "supabase-functions-signup-send-magic-link",
-          {
-            body: {
-              first_name: "Test",
-              last_name: "User",
-              email: "test@example.com",
-              referral_code: "TEST123",
-            },
+        const response = await fetch("/.netlify/functions/submit-application", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            first_name: "Test",
+            last_name: "User",
+            email: "test@example.com",
+            referral_code: "TEST123",
+            test_mode: true,
+          }),
+        });
 
-        if (error) {
-          throw new Error(error.message || JSON.stringify(error));
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || JSON.stringify(data));
         }
 
-        console.log("Original function test result:", data);
+        console.log("Submit function test result:", data);
         setResult(JSON.stringify(data, null, 2));
       } catch (err) {
         console.error(
-          `Original function test attempt ${retryCount + 1} failed:`,
+          `Submit function test attempt ${retryCount + 1} failed:`,
           err,
         );
 
         if (retryCount < maxRetries) {
           retryCount++;
           const delay = 1000 * retryCount; // Exponential backoff
-          console.log(`Retrying original function test in ${delay}ms...`);
+          console.log(`Retrying submit function test in ${delay}ms...`);
           setTimeout(invokeWithRetry, delay);
         } else {
           setError(
@@ -120,7 +121,7 @@ const TestConnection = () => {
       }
     };
 
-    // Start the original function test with retry mechanism
+    // Start the submit function test with retry mechanism
     invokeWithRetry();
   };
 
@@ -128,7 +129,7 @@ const TestConnection = () => {
     <div className="min-h-screen bg-[#faf4eb] p-8">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Edge Function Connection Test</CardTitle>
+          <CardTitle>Netlify Function Connection Test</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
@@ -141,11 +142,11 @@ const TestConnection = () => {
                 {isLoading ? "Testing..." : "Test Simple Connection"}
               </Button>
               <Button
-                onClick={testOriginalFunction}
+                onClick={testSubmitFunction}
                 disabled={isLoading}
                 className="bg-[#2c3e50] hover:bg-[#1a2530]"
               >
-                {isLoading ? "Testing..." : "Test Signup Function"}
+                {isLoading ? "Testing..." : "Test Submit Function"}
               </Button>
             </div>
 
@@ -153,14 +154,12 @@ const TestConnection = () => {
               <h3 className="font-medium mb-2">Environment Variables:</h3>
               <div className="bg-gray-100 p-3 rounded text-sm">
                 <p>
-                  VITE_SUPABASE_URL:{" "}
-                  {import.meta.env.VITE_SUPABASE_URL ? "✓ Set" : "✗ Not set"}
+                  JWT_SECRET:{" "}
+                  {import.meta.env.JWT_SECRET ? "✓ Set" : "✗ Not set"}
                 </p>
                 <p>
-                  VITE_SUPABASE_ANON_KEY:{" "}
-                  {import.meta.env.VITE_SUPABASE_ANON_KEY
-                    ? "✓ Set"
-                    : "✗ Not set"}
+                  ZOHO_SMTP_USERNAME:{" "}
+                  {import.meta.env.ZOHO_SMTP_USERNAME ? "✓ Set" : "✗ Not set"}
                 </p>
               </div>
             </div>

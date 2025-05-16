@@ -7,9 +7,6 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-// Use the imported supabase client instead of creating a new one
-import { supabase } from "../supabaseClient";
-
 const RegistrationPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -65,158 +62,34 @@ const RegistrationPage = () => {
     try {
       console.log("Starting registration process for email:", email);
 
-      // Store user data in contacts table
-      const { data: contactData, error: insertError } = await supabase
-        .from("contacts")
-        .insert({
-          first_name: firstName,
-          last_name: lastName,
+      // Submit application data to Netlify function
+      const response = await fetch("/.netlify/functions/submit-application", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
           email,
-          referral_code: referralCode,
-          status: "pending",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select();
+          referralCode,
+        }),
+      });
 
-      if (insertError) {
-        console.error("Error inserting into contacts:", insertError);
-        if (insertError.code === "23505") {
-          // Postgres unique violation code
-          setError(
-            "This email is already registered. Please use a different email.",
-          );
-        } else {
-          setError(`Error creating contact record: ${insertError.message}`);
-        }
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle error response
+        console.error("Registration error:", data.message);
+        setError(data.message || "An error occurred during registration");
         setIsLoading(false);
         return;
       }
 
-      console.log("Successfully inserted contact data:", contactData);
-
-      // Log signup attempt to userData table
-      try {
-        console.log("Attempting to log signup attempt to userData table");
-        const userDataPayload = {
-          email,
-          action: "signup_attempt",
-          action_details: {
-            first_name: firstName,
-            last_name: lastName,
-            referral_code: referralCode,
-            created_at: new Date().toISOString(),
-          },
-          created_at: new Date().toISOString(),
-        };
-        console.log("userData payload:", userDataPayload);
-
-        const { data: logData, error: logError } = await supabase
-          .from("userData")
-          .insert(userDataPayload);
-
-        if (logError) {
-          console.error("Error logging signup attempt:", logError);
-          console.log("Log error details:", {
-            code: logError.code,
-            message: logError.message,
-            details: logError.details,
-            hint: logError.hint,
-          });
-        } else {
-          console.log("Successfully logged signup attempt");
-        }
-      } catch (logError) {
-        // Continue even if logging fails
-        console.error("Exception during logging signup attempt:", logError);
-      }
-
-      // Send magic link using Supabase Auth with more detailed error handling
-      try {
-        console.log("Attempting to send magic link to:", email);
-        console.log("Redirect URL:", `${window.location.origin}/verify`);
-
-        const otpOptions = {
-          email,
-          options: {
-            emailRedirectTo: `${window.location.origin}/verify`,
-            data: {
-              first_name: firstName,
-              last_name: lastName,
-              referral_code: referralCode,
-              intent: "signup",
-            },
-          },
-        };
-
-        console.log("OTP options:", JSON.stringify(otpOptions, null, 2));
-
-        const { data: otpData, error: authError } =
-          await supabase.auth.signInWithOtp(otpOptions);
-
-        if (authError) {
-          console.error("Supabase signInWithOtp error:", authError);
-
-          // Log more details about the error for debugging
-          console.log("Error details:", {
-            code: authError.code,
-            name: authError.name,
-            message: authError.message,
-            status: authError.status,
-          });
-
-          // If there was an error sending the email, update the contacts status
-          await supabase
-            .from("contacts")
-            .update({
-              status: "email_failed",
-              error_details: authError.message,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("email", email);
-
-          let errorMessage = "Error sending verification email. ";
-
-          // Provide more specific error messages based on common issues
-          if (authError.message.includes("rate limit")) {
-            errorMessage +=
-              "Too many attempts. Please try again in a few minutes.";
-          } else if (authError.message.includes("Invalid email")) {
-            errorMessage += "Please check that your email address is correct.";
-          } else {
-            errorMessage += `${authError.message}. Please try again later.`;
-          }
-
-          setError(errorMessage);
-          setIsLoading(false);
-          return;
-        }
-
-        console.log("Magic link sent successfully", otpData);
-      } catch (unexpectedError) {
-        console.error("Unexpected error during OTP process:", unexpectedError);
-
-        // Update contacts table with error status
-        await supabase
-          .from("contacts")
-          .update({
-            status: "email_failed",
-            error_details:
-              unexpectedError instanceof Error
-                ? unexpectedError.message
-                : "Unknown error",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("email", email);
-
-        setError(
-          "An unexpected error occurred while sending the verification email. Please try again later.",
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      setMessage("Verification email sent. Please check your inbox.");
+      console.log("Registration successful:", data);
+      setMessage(
+        data.message || "Verification email sent. Please check your inbox.",
+      );
 
       // Store email in sessionStorage for verification page
       sessionStorage.setItem("registrationEmail", email);

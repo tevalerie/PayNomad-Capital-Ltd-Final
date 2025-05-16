@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { supabase } from "../supabaseClient";
 import { useSearchParams } from "react-router-dom";
 import "./Register.css";
 
@@ -46,85 +45,17 @@ const Register: React.FC = () => {
     }
 
     try {
-      console.log("Supabase client config:", {
-        url: import.meta.env.VITE_SUPABASE_URL,
-        anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? "Set" : "Missing",
-      });
-      console.log(
-        "Current session:",
-        (await supabase.auth.getSession()).data.session
-          ? "Authenticated"
-          : "No session (anon)",
-      );
-      console.log("Inserting into contacts with data:", {
+      console.log("Submitting registration data:", {
         first_name,
         last_name,
         email,
-        referral_code,
-        status: "pending",
-        verification_token: intent,
-      });
-      console.log("Attempting to insert contact with:", {
-        first_name,
-        last_name,
-        email,
-        referral_code,
-        status: "pending",
-        verification_token: intent,
-      });
-
-      const { data: contactData, error: contactError } = await supabase
-        .from("contacts")
-        .insert([
-          {
-            first_name,
-            last_name,
-            email,
-            referral_code,
-            status: "pending",
-            verification_token: intent,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
-
-      console.log("Contact insert result:", {
-        data: contactData,
-        error: contactError,
-      });
-
-      if (contactError) {
-        console.error("Contact insert error:", contactError);
-        throw new Error(
-          `Error creating contact record: ${contactError.message}`,
-        );
-      }
-
-      const actionDetails = {
-        first_name,
-        last_name,
         referral_code,
         intent,
-        created_at: new Date().toISOString(),
-      };
-      console.log("Inserting into audit_logs with data:", actionDetails);
-      const { error: logError } = await supabase.from("audit_logs").insert([
-        {
-          user_id: contactData.id,
-          email,
-          action: "signup_attempt",
-          action_details: actionDetails,
-        },
-      ]);
-
-      if (logError) console.error("Failed to log signup attempt:", logError);
+      });
 
       // Make sure we're using the correct domain for the redirect
       const baseUrl = window.location.origin;
       const redirectTo = `${baseUrl}/verify`; // Use dynamic origin for local development
-      console.log("Base URL for redirect:", baseUrl);
 
       // Create metadata payload with timestamp to ensure it's unique
       const metadataPayload = {
@@ -135,38 +66,35 @@ const Register: React.FC = () => {
         timestamp: new Date().toISOString(),
       };
 
-      console.log(
-        "Attempting signInWithOtp with email:",
-        email,
-        "redirectTo:",
-        redirectTo,
-        "metadata:",
-        metadataPayload,
-      );
-
-      // Clear any existing session before attempting to sign in
-      await supabase.auth.signOut();
-
-      const { data: otpData, error: authError } =
-        await supabase.auth.signInWithOtp({
+      // Call Netlify function to submit application
+      const response = await fetch("/.netlify/functions/submit-application", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          first_name,
+          last_name,
           email,
-          options: {
-            emailRedirectTo: redirectTo,
-            data: metadataPayload,
-          },
-        });
+          referral_code,
+          intent,
+          redirectTo,
+          metadata: metadataPayload,
+        }),
+      });
+
+      const result = await response.json();
 
       // Store debug information
       setDebugInfo({
         email,
         redirectTo,
         metadataPayload,
-        otpResponse: otpData || { error: authError },
+        response: result,
       });
 
-      if (authError) {
-        console.error("signInWithOtp error:", authError);
-        throw new Error(authError.message);
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit application");
       }
 
       setMessage("Magic link sent! Please check your email.");
@@ -257,10 +185,10 @@ const Register: React.FC = () => {
               {JSON.stringify(debugInfo.metadataPayload, null, 2)}
             </pre>
             <p>
-              <strong>OTP Response:</strong>
+              <strong>Response:</strong>
             </p>
             <pre style={{ whiteSpace: "pre-wrap", fontSize: "12px" }}>
-              {JSON.stringify(debugInfo.otpResponse, null, 2)}
+              {JSON.stringify(debugInfo.response, null, 2)}
             </pre>
           </div>
         )}

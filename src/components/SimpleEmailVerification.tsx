@@ -4,7 +4,6 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import emailjs from "@emailjs/browser";
-import { supabase } from "../supabaseClient";
 
 const SimpleEmailVerification = () => {
   const [firstName, setFirstName] = useState("");
@@ -60,29 +59,30 @@ const SimpleEmailVerification = () => {
     try {
       console.log("Starting registration process for email:", email);
 
-      // Store user data in contacts table
-      const { data: contactData, error: insertError } = await supabase
-        .from("contacts")
-        .insert({
+      // Call Netlify function to submit application
+      const response = await fetch("/.netlify/functions/submit-application", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
           email,
           referral_code: referralCode,
-          status: "pending",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select();
+          verification_method: "code",
+        }),
+      });
 
-      if (insertError) {
-        console.error("Error inserting into contacts:", insertError);
-        if (insertError.code === "23505") {
-          // Postgres unique violation code
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 409) {
           setError(
             "This email is already registered. Please use a different email.",
           );
         } else {
-          setError(`Error creating contact record: ${insertError.message}`);
+          setError(result.error || "Failed to create contact record");
         }
         setIsLoading(false);
         return;
@@ -92,21 +92,6 @@ const SimpleEmailVerification = () => {
       const verificationCode = Math.floor(
         100000 + Math.random() * 900000,
       ).toString();
-
-      // Store the verification code in the database
-      const { error: verificationError } = await supabase
-        .from("contacts")
-        .update({
-          verification_token: verificationCode,
-          status: "email_pending",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("email", email);
-
-      if (verificationError) {
-        console.error("Error storing verification code:", verificationError);
-        throw new Error("Failed to create verification code");
-      }
 
       // Send verification email using EmailJS
       const templateParams = {
@@ -125,14 +110,18 @@ const SimpleEmailVerification = () => {
 
       console.log("Email sent successfully:", emailjsResult);
 
-      // Update contact status
-      await supabase
-        .from("contacts")
-        .update({
+      // Update verification code via Netlify function
+      await fetch("/.netlify/functions/update-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          verification_code: verificationCode,
           status: "email_sent",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("email", email);
+        }),
+      });
 
       setMessage(
         "Verification email sent. Please check your inbox and enter the 6-digit code below.",
@@ -165,42 +154,25 @@ const SimpleEmailVerification = () => {
     setError("");
 
     try {
-      // Check if the verification code matches
-      const { data, error } = await supabase
-        .from("contacts")
-        .select("*")
-        .eq("email", email)
-        .eq("verification_token", verificationCode)
-        .single();
+      // Check if the verification code matches via Netlify function
+      const response = await fetch("/.netlify/functions/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          code: verificationCode,
+        }),
+      });
 
-      if (error || !data) {
-        console.error("Verification error:", error);
+      const result = await response.json();
+
+      if (!response.ok) {
         setError("Invalid verification code. Please try again.");
         setVerifying(false);
         return;
       }
-
-      // Update contact as verified
-      await supabase
-        .from("contacts")
-        .update({
-          status: "verified",
-          verified_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("email", email);
-
-      // Create profile entry
-      await supabase.from("profiles").upsert(
-        {
-          email,
-          full_name: `${firstName} ${lastName}`,
-          referral_code: referralCode,
-          is_email_verified: true,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "email" },
-      );
 
       setMessage("Email verified successfully! Redirecting...");
 
