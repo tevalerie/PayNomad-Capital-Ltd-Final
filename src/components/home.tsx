@@ -6,9 +6,11 @@ import ServicesSection from "./ServicesSection";
 import InsightsSection from "./InsightsSection";
 import ContactSection from "./ContactSection";
 import Footer from "./Footer";
-import { motion } from "framer-motion";
 
 const Home: React.FC = () => {
+  console.log("Home component rendering");
+
+  // Simple refs for section navigation
   const aboutRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const insightsRef = useRef<HTMLDivElement>(null);
@@ -28,20 +30,25 @@ const Home: React.FC = () => {
     }
   };
 
+  // Log component availability
+  console.log("Component availability check:", {
+    Navbar: !!Navbar,
+    HeroSection: !!HeroSection,
+    AboutSection: !!AboutSection,
+    ServicesSection: !!ServicesSection,
+    InsightsSection: !!InsightsSection,
+    ContactSection: !!ContactSection,
+    Footer: !!Footer,
+  });
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar onNavigate={scrollToSection} />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
-        <HeroSection
-          companyName="PayNomad Capital"
-          tagline="Empowering Your Finances"
-        />
-      </motion.div>
+      <HeroSection
+        companyName="PayNomad Capital"
+        tagline="Empowering Your Finances"
+      />
 
       <div ref={aboutRef}>
         <AboutSection />

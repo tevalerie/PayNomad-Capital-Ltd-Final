@@ -1,9 +1,9 @@
 import React from "react";
-import Navbar from "./Navbar";
-import Footer from "./Footer";
-import VerificationForm from "./VerificationForm";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import OtpVerificationForm from "../components/OtpVerificationForm";
 
-const VerifyEmail = () => {
+const OtpVerificationPage = () => {
   return (
     <div className="min-h-screen bg-[#faf4eb] flex flex-col">
       <Navbar />
@@ -20,29 +20,29 @@ const VerifyEmail = () => {
               Verify Your Email
             </h1>
           </div>
-          <VerificationForm />
+          <OtpVerificationForm />
           <div className="mt-8 text-center">
             <div className="flex flex-wrap justify-center gap-4 md:gap-6 px-2">
               <a
-                href="#about"
+                href="/#about"
                 className="text-sm text-gray-600 hover:text-[#0077be] transition-colors"
               >
                 About Us
               </a>
               <a
-                href="#services"
+                href="/#services"
                 className="text-sm text-gray-600 hover:text-[#0077be] transition-colors"
               >
                 Services
               </a>
               <a
-                href="#insights"
+                href="/#insights"
                 className="text-sm text-gray-600 hover:text-[#0077be] transition-colors"
               >
                 Insights
               </a>
               <a
-                href="#contact"
+                href="/#contact"
                 className="text-sm text-gray-600 hover:text-[#0077be] transition-colors"
               >
                 Contact
@@ -57,4 +57,4 @@ const VerifyEmail = () => {
   );
 };
 
-export default VerifyEmail;
+export default OtpVerificationPage;

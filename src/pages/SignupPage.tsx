@@ -1,9 +1,9 @@
 import React from "react";
-import Navbar from "./Navbar";
-import Footer from "./Footer";
-import RegistrationForm from "./RegistrationForm";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import SignupForm from "../components/SignupForm";
 
-const RegistrationPage = () => {
+const SignupPage = () => {
   return (
     <div className="min-h-screen bg-[#faf4eb] flex flex-col">
       <Navbar />
@@ -24,7 +24,7 @@ const RegistrationPage = () => {
       {/* Form Card that overlaps hero section */}
       <div className="container mx-auto px-4 -mt-8 flex justify-center relative z-10">
         <div className="w-full max-w-[480px]">
-          <RegistrationForm />
+          <SignupForm />
         </div>
       </div>
 
@@ -36,4 +36,4 @@ const RegistrationPage = () => {
   );
 };
 
-export default RegistrationPage;
+export default SignupPage;
