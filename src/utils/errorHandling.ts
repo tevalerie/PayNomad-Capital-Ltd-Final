@@ -2,8 +2,6 @@
  * Utility functions for error handling throughout the application
  */
 
-import { supabase } from "../supabaseClient";
-
 /**
  * Logs errors to console and potentially to a monitoring service
  * @param error The error object
@@ -22,32 +20,6 @@ export const logError = async (
 
   if (errorStack) {
     console.error("Stack trace:", errorStack);
-  }
-
-  // Log to Supabase if available
-  try {
-    if (supabase) {
-      const { error: logError } = await supabase.from("userData").insert({
-        email: metadata?.email || "system",
-        action: "error_log",
-        action_details: {
-          context,
-          error: errorMessage,
-          stack: errorStack,
-          timestamp: new Date().toISOString(),
-          browser:
-            typeof navigator !== "undefined" ? navigator.userAgent : "server",
-          ...(metadata || {}),
-        },
-        created_at: new Date().toISOString(),
-      });
-
-      if (logError) {
-        console.error("Error logging to Supabase:", logError);
-      }
-    }
-  } catch (loggingError) {
-    console.error("Error during error logging:", loggingError);
   }
 
   // Here you would add code to send to your error monitoring service
