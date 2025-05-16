@@ -9,6 +9,7 @@ import TestConnection from "./components/TestConnection";
 import NetworkStatus from "./components/NetworkStatus";
 import SimpleEmailVerification from "./components/SimpleEmailVerification";
 import EmailValidator from "./components/EmailValidator";
+import NetlifyFunctionsTester from "./components/NetlifyFunctionsTester";
 import routes from "tempo-routes";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
