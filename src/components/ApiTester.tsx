@@ -8,6 +8,11 @@ const ApiTester = () => {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    // Automatically test the endpoint when component mounts
+    testSubmitApplication();
+  }, []);
+
   const testSubmitApplication = async () => {
     setIsLoading(true);
     setResult("");
