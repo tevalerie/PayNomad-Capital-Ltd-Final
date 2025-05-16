@@ -77,6 +77,7 @@ function App() {
         <Route path="/email-validator" element={<EmailValidator />} />
         <Route path="/test-functions" element={<NetlifyFunctionsTester />} />
         <Route path="/debug-functions" element={<NetlifyFunctionDebugger />} />
+        <Route path="/api-tester" element={<ApiTester />} />
 
         {/* Add this before any catchall route */}
         {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
