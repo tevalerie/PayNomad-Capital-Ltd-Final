@@ -2,12 +2,19 @@
  * Utility functions for error handling throughout the application
  */
 
+import { supabase } from "../supabaseClient";
+
 /**
  * Logs errors to console and potentially to a monitoring service
  * @param error The error object
  * @param context Additional context about where the error occurred
+ * @param metadata Additional metadata about the error
  */
-export const logError = (error: unknown, context: string): void => {
+export const logError = async (
+  error: unknown,
+  context: string,
+  metadata?: Record<string, any>,
+): Promise<void> => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -15,6 +22,32 @@ export const logError = (error: unknown, context: string): void => {
 
   if (errorStack) {
     console.error("Stack trace:", errorStack);
+  }
+
+  // Log to Supabase if available
+  try {
+    if (supabase) {
+      const { error: logError } = await supabase.from("userData").insert({
+        email: metadata?.email || "system",
+        action: "error_log",
+        action_details: {
+          context,
+          error: errorMessage,
+          stack: errorStack,
+          timestamp: new Date().toISOString(),
+          browser:
+            typeof navigator !== "undefined" ? navigator.userAgent : "server",
+          ...(metadata || {}),
+        },
+        created_at: new Date().toISOString(),
+      });
+
+      if (logError) {
+        console.error("Error logging to Supabase:", logError);
+      }
+    }
+  } catch (loggingError) {
+    console.error("Error during error logging:", loggingError);
   }
 
   // Here you would add code to send to your error monitoring service

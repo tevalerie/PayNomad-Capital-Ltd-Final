@@ -1,7 +1,5 @@
 import React, { Suspense, useState, useEffect } from "react";
 import { useRoutes, Routes, Route, useNavigate } from "react-router-dom";
-import MagicLinkRegister from "./components/MagicLinkRegister";
-import VerifyMagicLink from "./components/VerifyMagicLink";
 import Home from "./components/home";
 import RegistrationPage from "./components/RegistrationPage";
 import Register from "./components/Register";
@@ -9,6 +7,8 @@ import VerifyEmail from "./components/VerifyEmail";
 import Verify from "./components/Verify";
 import TestConnection from "./components/TestConnection";
 import NetworkStatus from "./components/NetworkStatus";
+import SimpleEmailVerification from "./components/SimpleEmailVerification";
+import EmailValidator from "./components/EmailValidator";
 import routes from "tempo-routes";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
@@ -82,18 +82,57 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/register" element={<RegistrationPage />} />
-      <Route path="/register-simple" element={<Register />} />
-      <Route path="/verify" element={<VerifyEmail />} />
-      <Route path="/verify-simple" element={<Verify />} />
-      <Route path="/register-magic" element={<MagicLinkRegister />} />
-      <Route path="/verify-magic" element={<VerifyMagicLink />} />
+    <ErrorBoundary>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-screen bg-gray-50">
+            Loading...
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/register-simple" element={<Register />} />
+          <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/verify-simple" element={<Verify />} />
+          <Route
+            path="/register-simple"
+            element={<SimpleEmailVerification />}
+          />
+          <Route path="/email-validator" element={<EmailValidator />} />
+          <Route path="/validate-email" element={<EmailValidator />} />
+          <Route path="/test-functions" element={<NetlifyFunctionsTester />} />
 
-      {/* Add this before any catchall route */}
-      {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
-    </Routes>
+          {/* Add this before any catchall route */}
+          {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
+
+          {/* Catch-all route for 404 */}
+          <Route
+            path="*"
+            element={
+              <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+                <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    Page Not Found
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    The page you are looking for doesn't exist or has been
+                    moved.
+                  </p>
+                  <button
+                    onClick={() => (window.location.href = "/")}
+                    className="bg-[#0077be] hover:bg-[#0066a6] text-white py-2 px-4 rounded"
+                  >
+                    Go to Home
+                  </button>
+                </div>
+              </div>
+            }
+          />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
