@@ -1,28 +1,33 @@
-import { Routes, Route } from "react-router-dom";
-import { useRoutes } from "react-router-dom";
-import routes from "tempo-routes";
+import React from "react";
+import { useRoutes, Routes, Route } from "react-router-dom";
 import Home from "./components/home";
-import RegistrationPage from "./components/RegistrationPage";
-import VerifyEmail from "./components/VerifyEmail";
+import SignupPage from "./pages/SignupPage";
+import OtpVerificationPage from "./pages/OtpVerificationPage";
+import ErrorBoundary from "./components/ErrorBoundary";
+import routes from "tempo-routes";
 
 function App() {
+  console.log("App rendering, Home component available:", !!Home);
+
   return (
-    <>
-      {/* For the tempo routes */}
-      {import.meta.env.VITE_TEMPO && useRoutes(routes)}
-
+    <ErrorBoundary>
+      {import.meta.env.VITE_TEMPO && routes}
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<RegistrationPage />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/verify" element={<VerifyEmail />} />
-        <Route path="/auth/callback" element={<VerifyEmail />} />
-        {/* Add more routes as needed */}
+        <Route
+          path="/"
+          element={
+            <div className="bg-white min-h-screen">
+              <Home />
+            </div>
+          }
+        />
+        <Route path="/newsignup" element={<SignupPage />} />
+        <Route path="/OTPVerification" element={<OtpVerificationPage />} />
 
-        {/* Add this before the catchall route */}
+        {/* Add this before any catchall route */}
         {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
       </Routes>
-    </>
+    </ErrorBoundary>
   );
 }
 

@@ -85,7 +85,7 @@ const HeroSection = ({
 
       {/* Down arrow */}
       <motion.div
-        className="absolute bottom-10 left-0 right-0 mx-auto w-fit cursor-pointer z-20"
+        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 cursor-pointer z-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, y: [0, 10, 0] }}
         transition={{ delay: 1, duration: 1.5, repeat: Infinity }}

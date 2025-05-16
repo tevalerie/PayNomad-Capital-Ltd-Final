@@ -534,77 +534,37 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="md:col-span-1 md:text-center">
+          <div className="md:col-span-1 text-center md:text-center">
             <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <a
-                  href="/#about"
+                  href="#about"
                   className="text-gray-300 hover:text-[#0077be] transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (window.location.pathname !== "/") {
-                      window.location.href = "/#about";
-                    } else {
-                      document
-                        .getElementById("about")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
                 >
                   About Us
                 </a>
               </li>
               <li>
                 <a
-                  href="/#services"
+                  href="#services"
                   className="text-gray-300 hover:text-[#0077be] transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (window.location.pathname !== "/") {
-                      window.location.href = "/#services";
-                    } else {
-                      document
-                        .getElementById("services")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
                 >
                   Services
                 </a>
               </li>
               <li>
                 <a
-                  href="/#insights"
+                  href="#insights"
                   className="text-gray-300 hover:text-[#0077be] transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (window.location.pathname !== "/") {
-                      window.location.href = "/#insights";
-                    } else {
-                      document
-                        .getElementById("insights")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
                 >
                   Insights
                 </a>
               </li>
               <li>
                 <a
-                  href="/#contact"
+                  href="#contact"
                   className="text-gray-300 hover:text-[#0077be] transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (window.location.pathname !== "/") {
-                      window.location.href = "/#contact";
-                    } else {
-                      document
-                        .getElementById("contact")
-                        ?.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
                 >
                   Contact
                 </a>

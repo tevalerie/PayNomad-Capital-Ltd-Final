@@ -1,18 +1,38 @@
-# netlify.toml
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-# Force HTTPS
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-
-# Handle SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Environment variables will be set in the Netlify dashboard
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "functions"
+
+# Environment variables needed for Edge Functions
+[build.environment]
+  VITE_SUPABASE_URL = "${VITE_SUPABASE_URL}"
+  VITE_SUPABASE_ANON_KEY = "${VITE_SUPABASE_ANON_KEY}"
+  SUPABASE_URL = "${SUPABASE_URL}"
+  SUPABASE_ANON_KEY = "${SUPABASE_ANON_KEY}"
+  SUPABASE_SERVICE_KEY = "${SUPABASE_SERVICE_KEY}"
+  SUPABASE_PROJECT_ID = "${SUPABASE_PROJECT_ID}"
+  JWT_SECRET = "${JWT_SECRET}"
+  ZOHO_SMTP_USERNAME = "${ZOHO_SMTP_USERNAME}"
+  ZOHO_SMTP_PASSWORD = "${ZOHO_SMTP_PASSWORD}"
+  ZEROBOUNCE_API_KEY = "${ZEROBOUNCE_API_KEY}"
+
+# Add CORS headers for Supabase Edge Functions
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization, x-client-info, apikey"
+
+# Add CORS headers for Netlify Functions
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"

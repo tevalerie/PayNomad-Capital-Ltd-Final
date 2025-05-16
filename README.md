@@ -1,6 +1,6 @@
-# PayNomad Capital Ltd.
+# React + TypeScript + Vite
 
-PayNomad Capital offers global financial solutions for businesses and HNWIs, with seamless cross-border payments, multi-currency accounts, and compliance expertise.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
 

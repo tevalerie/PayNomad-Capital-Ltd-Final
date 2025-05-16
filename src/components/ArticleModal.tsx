@@ -61,29 +61,9 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
         )}
 
         <div className="text-gray-700 leading-relaxed space-y-4">
-          {article.content.split("\n\n").map((paragraph, index) => {
-            if (paragraph.startsWith("## ")) {
-              return (
-                <h2
-                  key={index}
-                  className="text-xl font-bold text-[#2c3e50] mt-6 mb-3"
-                >
-                  {paragraph.substring(3)}
-                </h2>
-              );
-            } else if (paragraph.startsWith("# ")) {
-              return (
-                <h1
-                  key={index}
-                  className="text-2xl font-bold text-[#2c3e50] mt-6 mb-3"
-                >
-                  {paragraph.substring(2)}
-                </h1>
-              );
-            } else {
-              return <p key={index}>{paragraph}</p>;
-            }
-          })}
+          {article.content.split("\n\n").map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
         </div>
       </DialogContent>
     </Dialog>

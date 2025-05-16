@@ -7,8 +7,10 @@ import { Card } from "./ui/card";
 import { Send, CheckCircle } from "lucide-react";
 import emailjs from "@emailjs/browser";
 
-// Initialize EmailJS with public key
-emailjs.init("0Smk56TSivW-wtEJp");
+// Initialize EmailJS with public key (if available in environment)
+if (import.meta.env.VITE_EMAILJS_PUBLIC_KEY) {
+  emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+}
 
 interface ContactSectionProps {
   title?: string;
@@ -81,33 +83,57 @@ const ContactSection: React.FC<ContactSectionProps> = ({
       setIsLoading(true);
       setEmailError("");
 
-      // EmailJS configuration
-      emailjs
-        .sendForm(
-          "service_tpp26lo", // Service ID
-          "template_jxqzh6n", // Template ID
-          formRef.current as HTMLFormElement,
-          "0Smk56TSivW-wtEJp", // Public key
-        )
-        .then((result) => {
-          console.log("Email sent successfully:", result.text);
-          setIsSubmitted(true);
+      // Retry mechanism for email sending
+      const maxRetries = 3;
+      let retryCount = 0;
 
-          // Reset form after submission
-          setFormState({
-            name: "",
-            email: "",
-            phone: "",
-            message: "",
+      const sendEmailWithRetry = () => {
+        // EmailJS configuration
+        emailjs
+          .sendForm(
+            import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_id", // Uses environment variable if available
+            import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_id", // Uses environment variable if available
+            formRef.current as HTMLFormElement,
+            import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "public_key", // Uses environment variable if available
+          )
+          .then((result) => {
+            console.log("Email sent successfully:", result.text);
+            setIsSubmitted(true);
+
+            // Reset form after submission
+            setFormState({
+              name: "",
+              email: "",
+              phone: "",
+              message: "",
+            });
+          })
+          .catch((error) => {
+            console.error(
+              `Failed to send email (attempt ${retryCount + 1}):`,
+              error.text,
+            );
+
+            if (retryCount < maxRetries) {
+              retryCount++;
+              const delay = 1000 * retryCount; // Exponential backoff
+              console.log(`Retrying in ${delay}ms...`);
+              setTimeout(sendEmailWithRetry, delay);
+            } else {
+              setEmailError(
+                "Failed to send your message after multiple attempts. Please try again later.",
+              );
+            }
+          })
+          .finally(() => {
+            if (retryCount >= maxRetries || retryCount === 0) {
+              setIsLoading(false);
+            }
           });
-        })
-        .catch((error) => {
-          console.error("Failed to send email:", error.text);
-          setEmailError("Failed to send your message. Please try again later.");
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+      };
+
+      // Start the email sending process with retry mechanism
+      sendEmailWithRetry();
     }
   };
 
@@ -154,7 +180,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                   </Label>
                   <Input
                     id="name"
-                    name="name"
+                    name="user_name"
                     value={formState.name}
                     onChange={handleChange}
                     className={`border-gray-300 focus:border-[#0077be] focus:ring-[#0077be] ${errors.name ? "border-red-500" : ""}`}
@@ -171,7 +197,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                   </Label>
                   <Input
                     id="email"
-                    name="email"
+                    name="user_email"
                     type="email"
                     value={formState.email}
                     onChange={handleChange}
@@ -190,7 +216,7 @@ const ContactSection: React.FC<ContactSectionProps> = ({
                 </Label>
                 <Input
                   id="phone"
-                  name="phone"
+                  name="user_phone"
                   type="tel"
                   value={formState.phone}
                   onChange={handleChange}
