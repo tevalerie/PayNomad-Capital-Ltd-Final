@@ -9,6 +9,7 @@ import SimpleEmailVerification from "./components/SimpleEmailVerification";
 import EmailValidator from "./components/EmailValidator";
 import NetlifyFunctionsTester from "./components/NetlifyFunctionsTester";
 import NetlifyFunctionDebugger from "./components/NetlifyFunctionDebugger";
+import ApiTester from "./components/ApiTester";
 
 // Helper component to ensure email is present for OTP verification page
 interface RequireEmailForOtpProps {
