@@ -6,8 +6,13 @@
  * Logs errors to console and potentially to a monitoring service
  * @param error The error object
  * @param context Additional context about where the error occurred
+ * @param metadata Additional metadata about the error
  */
-export const logError = (error: unknown, context: string): void => {
+export const logError = async (
+  error: unknown,
+  context: string,
+  metadata?: Record<string, any>,
+): Promise<void> => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
 

@@ -1,99 +1,92 @@
-import React, { Suspense, useState, useEffect } from "react";
-import { useRoutes, Routes, Route, useNavigate } from "react-router-dom";
-import MagicLinkRegister from "./components/MagicLinkRegister";
-import VerifyMagicLink from "./components/VerifyMagicLink";
+import React from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Home from "./components/home";
-import RegistrationPage from "./components/RegistrationPage";
-import Register from "./components/Register";
-import VerifyEmail from "./components/VerifyEmail";
-import Verify from "./components/Verify";
+import SignupForm from "./components/SignupForm";
+import OtpVerificationPage from "./components/OtpVerificationPage";
 import TestConnection from "./components/TestConnection";
 import NetworkStatus from "./components/NetworkStatus";
-import routes from "tempo-routes";
+import SimpleEmailVerification from "./components/SimpleEmailVerification";
+import EmailValidator from "./components/EmailValidator";
+import NetlifyFunctionsTester from "./components/NetlifyFunctionsTester";
+import NetlifyFunctionDebugger from "./components/NetlifyFunctionDebugger";
+import ApiTester from "./components/ApiTester";
 
-function ErrorFallback({ error, resetErrorBoundary }) {
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">
-          Something went wrong
-        </h2>
-        <p className="text-gray-700 mb-4">
-          We've encountered an unexpected error. Our team has been notified.
-        </p>
-        <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-40 mb-4">
-          {error.message}
-        </pre>
-        <button
-          onClick={resetErrorBoundary}
-          className="w-full bg-[#0077be] hover:bg-[#0066a6] text-white py-2 px-4 rounded"
-        >
-          Try again
-        </button>
-      </div>
-    </div>
-  );
+// Helper component to ensure email is present for OTP verification page
+interface RequireEmailForOtpProps {
+  children: JSX.Element;
+  verifyingEmail: string | null;
+  redirectTo?: string;
 }
 
-function ErrorBoundary({ children }) {
-  const [hasError, setHasError] = useState(false);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+const RequireEmailForOtp: React.FC<RequireEmailForOtpProps> = ({
+  children,
+  verifyingEmail,
+  redirectTo = "/register",
+}) => {
+  const location = useLocation();
 
-  useEffect(() => {
-    const handleError = (event) => {
-      event.preventDefault();
-      setHasError(true);
-      setError(event.error || new Error("Unknown error occurred"));
-      console.error("Global error caught:", event.error);
-      // Log to monitoring service if available
-    };
-
-    window.addEventListener("error", handleError);
-    window.addEventListener("unhandledrejection", (event) => {
-      handleError({ preventDefault: () => {}, error: event.reason });
-    });
-
-    return () => {
-      window.removeEventListener("error", handleError);
-      window.removeEventListener("unhandledrejection", handleError);
-    };
-  }, []);
-
-  const resetErrorBoundary = () => {
-    setHasError(false);
-    setError(null);
-    navigate(0); // Refresh the current route
-  };
-
-  if (hasError) {
-    return (
-      <ErrorFallback error={error} resetErrorBoundary={resetErrorBoundary} />
-    );
+  if (!verifyingEmail) {
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
   return children;
-}
+};
 
 function App() {
-  // For the tempo routes
-  {
-    import.meta.env.VITE_TEMPO && useRoutes(routes);
-  }
+  // Initialize verifyingEmail from sessionStorage or null
+  const [verifyingEmail, setVerifyingEmailState] = React.useState<
+    string | null
+  >(() => {
+    return sessionStorage.getItem("verifyingEmail");
+  });
+
+  const handleSetVerifyingEmail = React.useCallback((email: string) => {
+    sessionStorage.setItem("verifyingEmail", email);
+    setVerifyingEmailState(email);
+  }, []);
+
+  const clearVerifyingEmail = React.useCallback(() => {
+    sessionStorage.removeItem("verifyingEmail");
+    setVerifyingEmailState(null);
+  }, []);
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/register" element={<RegistrationPage />} />
-      <Route path="/register-simple" element={<Register />} />
-      <Route path="/verify" element={<VerifyEmail />} />
-      <Route path="/verify-simple" element={<Verify />} />
-      <Route path="/register-magic" element={<MagicLinkRegister />} />
-      <Route path="/verify-magic" element={<VerifyMagicLink />} />
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/register"
+          element={<SignupForm setVerifyingEmail={handleSetVerifyingEmail} />}
+        />
+        <Route
+          path="/verify"
+          element={
+            <RequireEmailForOtp verifyingEmail={verifyingEmail}>
+              <OtpVerificationPage
+                email={verifyingEmail || ""}
+                onVerificationSuccess={clearVerifyingEmail}
+              />
+            </RequireEmailForOtp>
+          }
+        />
+        <Route path="/test-connection" element={<TestConnection />} />
+        <Route path="/network-status" element={<NetworkStatus />} />
+        <Route
+          path="/simple-email-verification"
+          element={<SimpleEmailVerification />}
+        />
+        <Route path="/email-validator" element={<EmailValidator />} />
+        <Route path="/test-functions" element={<NetlifyFunctionsTester />} />
+        <Route path="/debug-functions" element={<NetlifyFunctionDebugger />} />
+        <Route path="/api-tester" element={<ApiTester />} />
 
-      {/* Add this before any catchall route */}
-      {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
-    </Routes>
+        {/* Add this before any catchall route */}
+        {import.meta.env.VITE_TEMPO && <Route path="/tempobook/*" />}
+
+        {/* Fallback route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
   );
 }
 
